@@ -1,0 +1,98 @@
+import { useState } from 'react';
+import { Lock, Unlock, Trash2 } from 'lucide-react';
+import { Lapkin } from '../../types';
+import { Button } from '../ui/Button';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
+import { useLapkinStore } from '../../stores/lapkin.store';
+import { useAuthStore } from '../../stores/auth.store';
+import { useAsyncAction } from '../../hooks/useAsyncAction';
+import { useNavigate } from 'react-router-dom';
+
+interface LapkinActionsProps {
+  lapkin: Lapkin;
+}
+
+export const LapkinActions = ({ lapkin }: LapkinActionsProps) => {
+  const { user } = useAuthStore();
+  const { lockLapkin, unlockLapkin, deleteLapkin } = useLapkinStore();
+  const { isLoading, run } = useAsyncAction();
+  const navigate = useNavigate();
+
+  const [confirmAction, setConfirmAction] = useState<'lock' | 'unlock' | 'delete' | null>(null);
+
+  const isPegawaiOwner = user?.role === 'pegawai' && lapkin.pegawaiId === user.id;
+  if (!isPegawaiOwner) return null;
+
+  const handleConfirm = async () => {
+    if (confirmAction === 'lock') {
+      await run(() => lockLapkin(lapkin.id), 'LAPKIN berhasil dikunci');
+    } else if (confirmAction === 'unlock') {
+      await run(() => unlockLapkin(lapkin.id), 'LAPKIN berhasil dibuka');
+    } else if (confirmAction === 'delete') {
+      const result = await run(() => deleteLapkin(lapkin.id), 'LAPKIN berhasil dihapus');
+      if (result !== null) navigate('/pegawai/lapkin');
+    }
+    setConfirmAction(null);
+  };
+
+  const confirmConfig = {
+    lock: { title: 'Kunci LAPKIN', message: 'LAPKIN akan dikunci dan siap dievaluasi oleh manager. Anda tidak dapat mengedit sampai di-unlock.', label: 'Kunci', variant: 'primary' as const },
+    unlock: { title: 'Buka LAPKIN', message: 'LAPKIN akan dikembalikan ke status Draft dan dapat diedit kembali.', label: 'Buka', variant: 'primary' as const },
+    delete: { title: 'Hapus LAPKIN', message: 'LAPKIN ini akan dihapus permanen beserta semua barisnya. Tindakan ini tidak dapat dibatalkan.', label: 'Hapus', variant: 'danger' as const },
+  };
+
+  const active = confirmAction ? confirmConfig[confirmAction] : null;
+
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        {lapkin.status === 'draft' && (
+          <>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setConfirmAction('lock')}
+              isLoading={isLoading}
+            >
+              <Lock className="w-4 h-4" />
+              Kunci untuk Evaluasi
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => setConfirmAction('delete')}
+              disabled={isLoading}
+            >
+              <Trash2 className="w-4 h-4" />
+              Hapus
+            </Button>
+          </>
+        )}
+        {lapkin.status === 'locked' && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setConfirmAction('unlock')}
+            isLoading={isLoading}
+          >
+            <Unlock className="w-4 h-4" />
+            Buka Kunci
+          </Button>
+        )}
+      </div>
+
+      {active && (
+        <ConfirmDialog
+          isOpen={!!confirmAction}
+          onClose={() => setConfirmAction(null)}
+          onConfirm={handleConfirm}
+          title={active.title}
+          message={active.message}
+          confirmLabel={active.label}
+          isLoading={isLoading}
+          variant={active.variant}
+        />
+      )}
+    </>
+  );
+};
