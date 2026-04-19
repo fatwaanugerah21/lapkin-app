@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-import { Lapkin, CreateLapkinRowPayload, UpdateLapkinRowPayload } from '../types';
+import { Lapkin, CreateLapkinRowPayload, UpdateLapkinRowPayload, LapkinRowActivityInput } from '../types';
 
 export const lapkinService = {
   getAll: async (): Promise<Lapkin[]> => {
@@ -12,8 +12,8 @@ export const lapkinService = {
     return data;
   },
 
-  create: async (tanggal: string): Promise<Lapkin> => {
-    const { data } = await apiClient.post('/lapkins', { tanggal });
+  create: async (reportDate: string): Promise<Lapkin> => {
+    const { data } = await apiClient.post('/lapkins', { reportDate });
     return data;
   },
 
@@ -41,14 +41,33 @@ export const lapkinService = {
     return data;
   },
 
+  managerUpdateRowScores: async (
+    lapkinId: string,
+    rowId: string,
+    activities: LapkinRowActivityInput[],
+  ): Promise<Lapkin> => {
+    const { data } = await apiClient.patch(`/lapkins/${lapkinId}/rows/${rowId}/scores`, { activities });
+    return data;
+  },
+
   deleteRow: async (lapkinId: string, rowId: string): Promise<Lapkin> => {
     await apiClient.delete(`/lapkins/${lapkinId}/rows/${rowId}`);
     const { data } = await apiClient.get(`/lapkins/${lapkinId}`);
     return data;
   },
 
-  evaluateRow: async (lapkinId: string, rowId: string, nilaiAkhir: number): Promise<Lapkin> => {
-    const { data } = await apiClient.patch(`/lapkins/${lapkinId}/rows/${rowId}/evaluate`, { nilaiAkhir });
+  evaluateRow: async (lapkinId: string, rowId: string): Promise<Lapkin> => {
+    const { data } = await apiClient.patch(`/lapkins/${lapkinId}/rows/${rowId}/evaluate`, {});
+    return data;
+  },
+
+  signByManager: async (lapkinId: string): Promise<Lapkin> => {
+    const { data } = await apiClient.patch(`/lapkins/${lapkinId}/sign-by-manager`, {});
+    return data;
+  },
+
+  signByEmployee: async (lapkinId: string): Promise<Lapkin> => {
+    const { data } = await apiClient.patch(`/lapkins/${lapkinId}/sign-by-employee`, {});
     return data;
   },
 };

@@ -20,7 +20,7 @@ export const LapkinActions = ({ lapkin }: LapkinActionsProps) => {
 
   const [confirmAction, setConfirmAction] = useState<'lock' | 'unlock' | 'delete' | null>(null);
 
-  const isPegawaiOwner = user?.role === 'pegawai' && lapkin.pegawaiId === user.id;
+  const isPegawaiOwner = user?.role === 'pegawai' && lapkin.employeeId === user.id;
   if (!isPegawaiOwner) return null;
 
   const handleConfirm = async () => {
@@ -36,9 +36,25 @@ export const LapkinActions = ({ lapkin }: LapkinActionsProps) => {
   };
 
   const confirmConfig = {
-    lock: { title: 'Kunci LAPKIN', message: 'LAPKIN akan dikunci dan siap dievaluasi oleh manager. Anda tidak dapat mengedit sampai di-unlock.', label: 'Kunci', variant: 'primary' as const },
-    unlock: { title: 'Buka LAPKIN', message: 'LAPKIN akan dikembalikan ke status Draft dan dapat diedit kembali.', label: 'Buka', variant: 'primary' as const },
-    delete: { title: 'Hapus LAPKIN', message: 'LAPKIN ini akan dihapus permanen beserta semua barisnya. Tindakan ini tidak dapat dibatalkan.', label: 'Hapus', variant: 'danger' as const },
+    lock: {
+      title: 'Kunci LAPKIN',
+      message:
+        'LAPKIN akan dikunci dan siap dievaluasi oleh manajer. Anda tidak dapat mengubah isi hingga LAPKIN dibuka kembali.',
+      label: 'Kunci',
+      variant: 'primary' as const,
+    },
+    unlock: {
+      title: 'Buka LAPKIN',
+      message: 'LAPKIN akan dikembalikan ke status draf dan dapat diubah kembali.',
+      label: 'Buka',
+      variant: 'primary' as const,
+    },
+    delete: {
+      title: 'Hapus LAPKIN',
+      message: 'LAPKIN ini akan dihapus permanen beserta semua barisnya. Tindakan ini tidak dapat dibatalkan.',
+      label: 'Hapus',
+      variant: 'danger' as const,
+    },
   };
 
   const active = confirmAction ? confirmConfig[confirmAction] : null;

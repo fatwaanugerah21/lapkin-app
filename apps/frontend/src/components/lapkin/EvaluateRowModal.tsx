@@ -1,57 +1,51 @@
-import { useState, useEffect } from 'react';
 import { Modal } from '../ui/Modal';
-import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { LapkinRow } from '../../types';
 
 interface EvaluateRowModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (nilaiAkhir: number) => Promise<void>;
+  onSubmit: () => Promise<void>;
   row: LapkinRow | null;
   isLoading: boolean;
 }
 
 export const EvaluateRowModal = ({ isOpen, onClose, onSubmit, row, isLoading }: EvaluateRowModalProps) => {
-  const [nilaiAkhir, setNilaiAkhir] = useState('');
-
-  useEffect(() => {
-    setNilaiAkhir(row?.nilaiAkhir ?? '');
-  }, [row, isOpen]);
+  const activities = row?.activities ?? [];
 
   const handleSubmit = async () => {
-    const value = parseFloat(nilaiAkhir);
-    if (isNaN(value) || value < 0 || value > 100) return;
-    await onSubmit(value);
+    await onSubmit();
     onClose();
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Evaluasi Baris" size="sm">
+    <Modal isOpen={isOpen} onClose={onClose} title="Tinjau Baris" size="sm">
       {row && (
         <div className="space-y-4">
-          <div className="bg-gray-50 rounded-lg p-3 text-sm">
-            <p className="text-gray-500 text-xs mb-1">Uraian Tugas</p>
-            <p className="text-gray-800 font-medium">{row.uraianTugas}</p>
-            <p className="text-gray-500 text-xs mt-2 mb-1">Waktu</p>
-            <p className="text-gray-700">{row.waktuMulai} – {row.waktuSelesai}</p>
+          <div className="bg-gray-50 rounded-lg p-3 text-sm space-y-2">
+            <p className="text-gray-500 text-xs">Waktu</p>
+            <p className="text-gray-700 font-medium">{row.startTime} – {row.endTime}</p>
+            <p className="text-gray-500 text-xs pt-2">Kegiatan</p>
+            <ul className="list-disc list-inside text-gray-800 space-y-1">
+              {activities.length === 0 && <li className="text-gray-400">–</li>}
+              {activities.map((a, i) => (
+                <li key={i} className="text-sm">
+                  {a.taskDescription || '–'}
+                  {a.finalScore != null && (
+                    <span className="text-gray-500 ml-1">(nilai akhir: {a.finalScore}%)</span>
+                  )}
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <Input
-            label="Nilai Akhir (%)"
-            type="number"
-            min={0}
-            max={100}
-            step={0.01}
-            value={nilaiAkhir}
-            onChange={(e) => setNilaiAkhir(e.target.value)}
-            placeholder="0 - 100"
-            autoFocus
-          />
+          <p className="text-sm text-gray-600">
+            Tandai baris ini sudah ditinjau. Nilai akhir per kegiatan telah diisi oleh pegawai.
+          </p>
 
           <div className="flex justify-end gap-3 pt-1">
             <Button variant="secondary" onClick={onClose} disabled={isLoading}>Batal</Button>
-            <Button variant="success" onClick={handleSubmit} isLoading={isLoading}>Simpan Nilai</Button>
+            <Button variant="success" onClick={handleSubmit} isLoading={isLoading}>Tandai ditinjau</Button>
           </div>
         </div>
       )}

@@ -32,4 +32,16 @@
   .scrollbar-thin {
     scrollbar-width: thin;
   }
+
+  /** Hide browser steppers on number inputs (use with type="number"). */
+  .input-number-no-spin {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  .input-number-no-spin::-webkit-outer-spin-button,
+  .input-number-no-spin::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 }

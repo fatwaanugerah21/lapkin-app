@@ -8,6 +8,14 @@ export interface LoginResponseDto {
   name: string;
   username: string;
   role: string;
-  jabatan: string;
+  jobTitle: string;
   nip: string;
+}
+
+export interface UserSignatureResponseDto {
+  signatureDataUrl: string | null;
+}
+
+export interface UpdateUserSignatureDto {
+  signatureDataUrl: string | null;
 }

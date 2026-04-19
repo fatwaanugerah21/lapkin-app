@@ -6,7 +6,7 @@ export interface CreateUserDto {
   username: string;
   password: string;
   role: UserRole;
-  jabatan: string;
+  jobTitle: string;
   managerId?: string;
 }
 
@@ -16,7 +16,7 @@ export interface UpdateUserDto {
   username?: string;
   password?: string;
   role?: UserRole;
-  jabatan?: string;
+  jobTitle?: string;
   managerId?: string | null;
 }
 
@@ -26,7 +26,7 @@ export interface UserResponseDto {
   nip: string;
   username: string;
   role: UserRole;
-  jabatan: string;
+  jobTitle: string;
   managerId: string | null;
   managerName: string | null;
   createdAt: Date;

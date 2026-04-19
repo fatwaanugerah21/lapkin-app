@@ -5,7 +5,7 @@ import { useLapkinStore } from '../../stores/lapkin.store';
 import { LapkinHeader } from '../../components/lapkin/LapkinHeader';
 import { LapkinTable } from '../../components/lapkin/LapkinTable';
 import { LapkinActions } from '../../components/lapkin/LapkinActions';
-import { StatusBadge } from '../../components/ui/Badge';
+import { StatusBadge, SignedByManagerBadge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { PageSpinner } from '../../components/ui/Spinner';
 
@@ -30,8 +30,9 @@ export const PegawaiLapkinDetail = () => {
           <ArrowLeft className="w-4 h-4" />
           Kembali
         </button>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
           <StatusBadge status={activeLapkin.status} />
+          <SignedByManagerBadge isSigned={activeLapkin.isSignedByManager === true} />
           <LapkinActions lapkin={activeLapkin} />
         </div>
       </div>

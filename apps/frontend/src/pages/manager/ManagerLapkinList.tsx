@@ -5,14 +5,12 @@ import { LapkinCard } from '../../components/lapkin/LapkinCard';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Spinner } from '../../components/ui/Spinner';
-import { LapkinStatus } from '../../types';
 import { clsx } from 'clsx';
 
-type FilterStatus = 'all' | LapkinStatus;
+type FilterStatus = 'all' | 'locked' | 'evaluated';
 
 const filterOptions: { value: FilterStatus; label: string }[] = [
   { value: 'all', label: 'Semua' },
-  { value: 'draft', label: 'Draft' },
   { value: 'locked', label: 'Menunggu Evaluasi' },
   { value: 'evaluated', label: 'Sudah Dievaluasi' },
 ];

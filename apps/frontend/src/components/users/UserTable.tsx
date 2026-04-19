@@ -17,7 +17,7 @@ export const UserTable = ({ users, onEdit, onDelete }: UserTableProps) => (
             <th className="px-4 py-3 text-left font-semibold text-gray-600">Nama</th>
             <th className="px-4 py-3 text-left font-semibold text-gray-600">NIP</th>
             <th className="px-4 py-3 text-left font-semibold text-gray-600">Jabatan</th>
-            <th className="px-4 py-3 text-left font-semibold text-gray-600">Role</th>
+            <th className="px-4 py-3 text-left font-semibold text-gray-600">Peran</th>
             <th className="px-4 py-3 text-left font-semibold text-gray-600">Atasan</th>
             <th className="px-4 py-3 text-center font-semibold text-gray-600 w-24">Aksi</th>
           </tr>
@@ -30,7 +30,7 @@ export const UserTable = ({ users, onEdit, onDelete }: UserTableProps) => (
                 <p className="text-xs text-gray-400">{user.username}</p>
               </td>
               <td className="px-4 py-3 text-gray-700 font-mono text-xs">{user.nip}</td>
-              <td className="px-4 py-3 text-gray-700 max-w-xs truncate">{user.jabatan}</td>
+              <td className="px-4 py-3 text-gray-700 max-w-xs truncate">{user.jobTitle}</td>
               <td className="px-4 py-3">
                 <RoleBadge role={user.role} />
               </td>
@@ -40,7 +40,7 @@ export const UserTable = ({ users, onEdit, onDelete }: UserTableProps) => (
                   <button
                     onClick={() => onEdit(user)}
                     className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors"
-                    title="Edit"
+                    title="Ubah"
                   >
                     <Pencil className="w-4 h-4" />
                   </button>

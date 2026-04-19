@@ -23,7 +23,7 @@ async function seed() {
     username: 'admin',
     passwordHash: adminPassword,
     role: 'admin',
-    jabatan: 'System Administrator',
+    jobTitle: 'System Administrator',
   }).onConflictDoNothing().returning();
 
   // Create manager
@@ -33,7 +33,7 @@ async function seed() {
     username: 'irham',
     passwordHash: managerPassword,
     role: 'manager',
-    jabatan: 'Kepala Seksi Pelayanan Medik dan Keperawatan',
+    jobTitle: 'Kepala Seksi Pelayanan Medik dan Keperawatan',
   }).onConflictDoNothing().returning();
 
   // Create pegawai
@@ -44,7 +44,7 @@ async function seed() {
       username: 'ruslan',
       passwordHash: pegawaiPassword,
       role: 'pegawai',
-      jabatan: 'Infection Prevention and Control Nurse (IPCN)',
+      jobTitle: 'Infection Prevention and Control Nurse (IPCN)',
       managerId: manager.id,
     }).onConflictDoNothing();
   }

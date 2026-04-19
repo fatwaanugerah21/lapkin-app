@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Lapkin, CreateLapkinRowPayload, UpdateLapkinRowPayload } from '../types';
+import { Lapkin, CreateLapkinRowPayload, UpdateLapkinRowPayload, LapkinRowActivityInput } from '../types';
 import { lapkinService } from '../services/lapkin.service';
 
 interface LapkinState {
@@ -9,14 +9,21 @@ interface LapkinState {
 
   fetchAll: () => Promise<void>;
   fetchOne: (id: string) => Promise<void>;
-  createLapkin: (tanggal: string) => Promise<Lapkin>;
+  createLapkin: (reportDate: string) => Promise<Lapkin>;
   deleteLapkin: (id: string) => Promise<void>;
   lockLapkin: (id: string) => Promise<void>;
   unlockLapkin: (id: string) => Promise<void>;
   addRow: (lapkinId: string, payload: CreateLapkinRowPayload) => Promise<void>;
   updateRow: (lapkinId: string, rowId: string, payload: UpdateLapkinRowPayload) => Promise<void>;
   deleteRow: (lapkinId: string, rowId: string) => Promise<void>;
-  evaluateRow: (lapkinId: string, rowId: string, nilaiAkhir: number) => Promise<void>;
+  evaluateRow: (lapkinId: string, rowId: string) => Promise<void>;
+  managerUpdateRowScores: (
+    lapkinId: string,
+    rowId: string,
+    activities: LapkinRowActivityInput[],
+  ) => Promise<void>;
+  signLapkinByManager: (lapkinId: string) => Promise<void>;
+  signLapkinByEmployee: (lapkinId: string) => Promise<void>;
   syncLapkin: (lapkin: Lapkin) => void;
 }
 
@@ -37,8 +44,8 @@ export const useLapkinStore = create<LapkinState>((set, get) => ({
     get().syncLapkin(lapkin);
   },
 
-  createLapkin: async (tanggal) => {
-    const lapkin = await lapkinService.create(tanggal);
+  createLapkin: async (reportDate) => {
+    const lapkin = await lapkinService.create(reportDate);
     set((s) => ({ lapkins: [lapkin, ...s.lapkins] }));
     return lapkin;
   },
@@ -73,12 +80,26 @@ export const useLapkinStore = create<LapkinState>((set, get) => ({
     get().syncLapkin(updated);
   },
 
-  evaluateRow: async (lapkinId, rowId, nilaiAkhir) => {
-    const updated = await lapkinService.evaluateRow(lapkinId, rowId, nilaiAkhir);
+  evaluateRow: async (lapkinId, rowId) => {
+    const updated = await lapkinService.evaluateRow(lapkinId, rowId);
     get().syncLapkin(updated);
   },
 
-  // Merge updated lapkin into both list and activeLapkin
+  managerUpdateRowScores: async (lapkinId, rowId, activities) => {
+    const updated = await lapkinService.managerUpdateRowScores(lapkinId, rowId, activities);
+    get().syncLapkin(updated);
+  },
+
+  signLapkinByManager: async (lapkinId) => {
+    const updated = await lapkinService.signByManager(lapkinId);
+    get().syncLapkin(updated);
+  },
+
+  signLapkinByEmployee: async (lapkinId) => {
+    const updated = await lapkinService.signByEmployee(lapkinId);
+    get().syncLapkin(updated);
+  },
+
   syncLapkin: (lapkin) => {
     set((s) => ({
       activeLapkin: s.activeLapkin?.id === lapkin.id ? lapkin : s.activeLapkin,

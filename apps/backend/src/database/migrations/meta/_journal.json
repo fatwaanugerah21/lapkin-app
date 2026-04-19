@@ -8,6 +8,69 @@
       "when": 1775819418310,
       "tag": "0000_fixed_nick_fury",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1775900000000,
+      "tag": "0001_lapkin_row_kegiatan",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1776000000000,
+      "tag": "0002_english_columns_and_lapkin_activities",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1776100000000,
+      "tag": "0003_activity_final_score_and_not_working",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1776200000000,
+      "tag": "0004_activity_is_rest",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1776300000000,
+      "tag": "0005_activity_not_working_percent",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1776400000000,
+      "tag": "0006_user_signature",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1776500000000,
+      "tag": "0007_lapkin_manager_signed_at",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1776600000000,
+      "tag": "0008_backfill_manager_signed_evaluated",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1776700000000,
+      "tag": "0009_lapkin_employee_signed_at",
+      "breakpoints": true
     }
   ]
 }

@@ -48,7 +48,13 @@ export class LapkinGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   notifyPegawaiLapkinEvaluated(lapkin: LapkinResponseDto): void {
     // Notify the pegawai that their LAPKIN was evaluated
-    this.server.to(`user:${lapkin.pegawaiId}`).emit('lapkin:evaluated', lapkin);
+    this.server.to(`user:${lapkin.employeeId}`).emit('lapkin:evaluated', lapkin);
+  }
+
+  notifyManagerLapkinEmployeeSigned(lapkin: LapkinResponseDto): void {
+    if (lapkin.managerId) {
+      this.server.to(`user:${lapkin.managerId}`).emit('lapkin:employee-signed', lapkin);
+    }
   }
 
   private emitToUserIfConnected(lapkin: LapkinResponseDto, event: string): void {

@@ -48,7 +48,7 @@ export const AdminDashboard = () => {
   return (
     <div className="p-6 space-y-6">
       <PageHeader
-        title="Admin Dashboard"
+        title="Dasbor administrator"
         subtitle="Kelola seluruh pengguna sistem LAPKIN"
         action={<Button onClick={() => navigate('/admin/users')}>Kelola Pengguna</Button>}
       />
@@ -58,8 +58,8 @@ export const AdminDashboard = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Total Pengguna" value={stats.total} color="bg-blue-100" icon={<Users className="w-6 h-6 text-blue-600" />} />
-          <StatCard label="Admin" value={stats.admin} color="bg-purple-100" icon={<ShieldCheck className="w-6 h-6 text-purple-600" />} />
-          <StatCard label="Manager" value={stats.manager} color="bg-indigo-100" icon={<UserCog className="w-6 h-6 text-indigo-600" />} />
+          <StatCard label="Administrator" value={stats.admin} color="bg-purple-100" icon={<ShieldCheck className="w-6 h-6 text-purple-600" />} />
+          <StatCard label="Manajer" value={stats.manager} color="bg-indigo-100" icon={<UserCog className="w-6 h-6 text-indigo-600" />} />
           <StatCard label="Pegawai" value={stats.pegawai} color="bg-gray-100" icon={<UserCheck className="w-6 h-6 text-gray-600" />} />
         </div>
       )}

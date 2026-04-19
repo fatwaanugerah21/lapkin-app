@@ -18,13 +18,13 @@ export const PegawaiLapkinList = () => {
   const navigate = useNavigate();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [tanggal, setTanggal] = useState('');
+  const [reportDate, setReportDate] = useState('');
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
   const handleCreate = async () => {
-    if (!tanggal) return;
-    const lapkin = await run(() => createLapkin(tanggal), 'LAPKIN berhasil dibuat');
+    if (!reportDate) return;
+    const lapkin = await run(() => createLapkin(reportDate), 'LAPKIN berhasil dibuat');
     if (lapkin) {
       setShowCreateModal(false);
       navigate(`/pegawai/lapkin/${(lapkin as Lapkin).id}`);
@@ -69,13 +69,13 @@ export const PegawaiLapkinList = () => {
           <Input
             label="Tanggal"
             type="date"
-            value={tanggal}
-            onChange={(e) => setTanggal(e.target.value)}
+            value={reportDate}
+            onChange={(e) => setReportDate(e.target.value)}
             max={new Date().toISOString().split('T')[0]}
           />
           <div className="flex justify-end gap-3">
             <Button variant="secondary" onClick={() => setShowCreateModal(false)}>Batal</Button>
-            <Button onClick={handleCreate} isLoading={isCreating} disabled={!tanggal}>Buat</Button>
+            <Button onClick={handleCreate} isLoading={isCreating} disabled={!reportDate}>Buat</Button>
           </div>
         </div>
       </Modal>

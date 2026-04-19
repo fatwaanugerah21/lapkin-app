@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useLapkinStore } from '../../stores/lapkin.store';
 import { LapkinHeader } from '../../components/lapkin/LapkinHeader';
 import { LapkinTable } from '../../components/lapkin/LapkinTable';
-import { StatusBadge } from '../../components/ui/Badge';
+import { StatusBadge, SignedByManagerBadge } from '../../components/ui/Badge';
 import { PageSpinner } from '../../components/ui/Spinner';
 import { Card } from '../../components/ui/Card';
 
@@ -19,8 +19,12 @@ export const ManagerLapkinDetail = () => {
 
   if (!activeLapkin || activeLapkin.id !== id) return <PageSpinner />;
 
-  const evaluatedCount = activeLapkin.rows.filter((r) => r.nilaiAkhir !== null).length;
-  const totalRows = activeLapkin.rows.length;
+  const rowsForEvaluationProgress = activeLapkin.rows.filter((r) => {
+    const activities = r.activities ?? [];
+    return activities.length > 0 && activities.some((a) => a.isRest !== true);
+  });
+  const evaluatedCount = rowsForEvaluationProgress.filter((r) => r.managerAcknowledged).length;
+  const totalRows = rowsForEvaluationProgress.length;
 
   return (
     <div className="p-6 space-y-4">
@@ -32,7 +36,10 @@ export const ManagerLapkinDetail = () => {
           <ArrowLeft className="w-4 h-4" />
           Kembali
         </button>
-        <StatusBadge status={activeLapkin.status} />
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <StatusBadge status={activeLapkin.status} />
+          <SignedByManagerBadge isSigned={activeLapkin.isSignedByManager === true} />
+        </div>
       </div>
 
       <LapkinHeader lapkin={activeLapkin} />
@@ -41,7 +48,7 @@ export const ManagerLapkinDetail = () => {
       {activeLapkin.status === 'locked' && totalRows > 0 && (
         <Card>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-gray-700">Progress Evaluasi</p>
+            <p className="text-sm font-medium text-gray-700">Progres evaluasi</p>
             <p className="text-sm text-gray-500">{evaluatedCount} / {totalRows} baris</p>
           </div>
           <div className="w-full bg-gray-100 rounded-full h-2">
@@ -52,7 +59,7 @@ export const ManagerLapkinDetail = () => {
           </div>
           {evaluatedCount < totalRows && (
             <p className="text-xs text-yellow-700 mt-2">
-              Klik ikon ⭐ pada baris untuk memberikan nilai akhir.
+              Klik ikon ⭐ pada baris untuk menandai baris sudah ditinjau (nilai akhir diisi pegawai per kegiatan).
             </p>
           )}
         </Card>

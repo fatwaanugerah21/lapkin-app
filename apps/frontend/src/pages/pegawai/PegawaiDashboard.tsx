@@ -54,7 +54,7 @@ export const PegawaiDashboard = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Total LAPKIN" value={stats.total} color="bg-blue-100" icon={<FileText className="w-6 h-6 text-blue-600" />} />
-          <StatCard label="Draft" value={stats.draft} color="bg-gray-100" icon={<Clock className="w-6 h-6 text-gray-600" />} />
+          <StatCard label="Draf" value={stats.draft} color="bg-gray-100" icon={<Clock className="w-6 h-6 text-gray-600" />} />
           <StatCard label="Menunggu Evaluasi" value={stats.locked} color="bg-yellow-100" icon={<Lock className="w-6 h-6 text-yellow-600" />} />
           <StatCard label="Sudah Dievaluasi" value={stats.evaluated} color="bg-green-100" icon={<CheckCircle className="w-6 h-6 text-green-600" />} />
         </div>

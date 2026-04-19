@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Clock, CheckCircle, Users } from 'lucide-react';
+import { FileText, CheckCircle, Users } from 'lucide-react';
 import { useAuthStore } from '../../stores/auth.store';
 import { useLapkinStore } from '../../stores/lapkin.store';
 import { Card } from '../../components/ui/Card';
@@ -36,7 +36,6 @@ export const ManagerDashboard = () => {
 
   const stats = {
     total: lapkins.length,
-    draft: lapkins.filter((l) => l.status === 'draft').length,
     locked: lapkins.filter((l) => l.status === 'locked').length,
     evaluated: lapkins.filter((l) => l.status === 'evaluated').length,
   };
@@ -55,9 +54,8 @@ export const ManagerDashboard = () => {
         <div className="flex justify-center py-12"><Spinner /></div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <StatCard label="Total LAPKIN" value={stats.total} color="bg-blue-100" icon={<FileText className="w-6 h-6 text-blue-600" />} />
-            <StatCard label="Masih Draft" value={stats.draft} color="bg-gray-100" icon={<Clock className="w-6 h-6 text-gray-600" />} />
             <StatCard label="Menunggu Evaluasi" value={stats.locked} color="bg-yellow-100" icon={<Users className="w-6 h-6 text-yellow-600" />} />
             <StatCard label="Sudah Dievaluasi" value={stats.evaluated} color="bg-green-100" icon={<CheckCircle className="w-6 h-6 text-green-600" />} />
           </div>
@@ -75,8 +73,8 @@ export const ManagerDashboard = () => {
                     className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-100 cursor-pointer hover:bg-yellow-100 transition-colors"
                   >
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{l.pegawaiName}</p>
-                      <p className="text-xs text-gray-500">{l.tanggal}</p>
+                      <p className="text-sm font-medium text-gray-900">{l.employeeName}</p>
+                      <p className="text-xs text-gray-500">{l.reportDate}</p>
                     </div>
                     <span className="text-xs font-medium text-yellow-700 bg-yellow-200 px-2 py-0.5 rounded-full">
                       Evaluasi Sekarang

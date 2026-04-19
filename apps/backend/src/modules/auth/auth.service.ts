@@ -1,11 +1,13 @@
-import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Inject, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { eq } from 'drizzle-orm';
 import * as bcrypt from 'bcryptjs';
 import { DRIZZLE } from '../../database/database.module';
 import { users } from '../../database/schema';
 import { JwtPayload } from '../../common/types';
-import { LoginDto, LoginResponseDto } from './auth.dto';
+import { LoginDto, LoginResponseDto, UserSignatureResponseDto, UpdateUserSignatureDto } from './auth.dto';
+
+const MAX_SIGNATURE_LENGTH = 600_000;
 
 @Injectable()
 export class AuthService {
@@ -36,7 +38,7 @@ export class AuthService {
         name: user.name,
         username: user.username,
         role: user.role,
-        jabatan: user.jabatan,
+        jobTitle: user.jobTitle,
         nip: user.nip,
       },
     };
@@ -49,7 +51,7 @@ export class AuthService {
         name: users.name,
         username: users.username,
         role: users.role,
-        jabatan: users.jabatan,
+        jobTitle: users.jobTitle,
         nip: users.nip,
       })
       .from(users)
@@ -58,5 +60,39 @@ export class AuthService {
 
     if (!user) throw new UnauthorizedException('User not found');
     return user;
+  }
+
+  async getSignature(userId: string): Promise<UserSignatureResponseDto> {
+    const [row] = await this.db
+      .select({ signatureDataUrl: users.signatureDataUrl })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!row) throw new UnauthorizedException('User not found');
+    return { signatureDataUrl: row.signatureDataUrl ?? null };
+  }
+
+  async updateSignature(userId: string, dto: UpdateUserSignatureDto): Promise<UserSignatureResponseDto> {
+    const { signatureDataUrl } = dto;
+
+    if (signatureDataUrl !== null) {
+      if (typeof signatureDataUrl !== 'string') {
+        throw new BadRequestException('signatureDataUrl must be a string or null');
+      }
+      if (!signatureDataUrl.startsWith('data:image/png;base64,')) {
+        throw new BadRequestException('Signature must be a PNG data URL');
+      }
+      if (signatureDataUrl.length > MAX_SIGNATURE_LENGTH) {
+        throw new BadRequestException('Signature is too large');
+      }
+    }
+
+    await this.db
+      .update(users)
+      .set({ signatureDataUrl, updatedAt: new Date() })
+      .where(eq(users.id, userId));
+
+    return { signatureDataUrl };
   }
 }

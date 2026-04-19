@@ -7,7 +7,7 @@ export const usersService = {
     return data;
   },
 
-  getManagers: async (): Promise<Pick<User, 'id' | 'name' | 'jabatan'>[]> => {
+  getManagers: async (): Promise<Pick<User, 'id' | 'name' | 'jobTitle'>[]> => {
     const { data } = await apiClient.get('/users/managers');
     return data;
   },

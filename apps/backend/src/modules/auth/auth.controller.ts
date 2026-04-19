@@ -1,7 +1,9 @@
-import { Controller, Post, Get, Body, Res, HttpCode, UseGuards } from '@nestjs/common';
+import {
+  Controller, Post, Get, Patch, Body, Res, HttpCode, UseGuards,
+} from '@nestjs/common';
 import { FastifyReply } from 'fastify';
 import { AuthService } from './auth.service';
-import { LoginDto } from './auth.dto';
+import { LoginDto, UpdateUserSignatureDto } from './auth.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators';
 import { RequestUser } from '../../common/types';
@@ -38,5 +40,18 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   getMe(@CurrentUser() user: RequestUser) {
     return this.authService.getMe(user.id);
+  }
+
+  @Get('me/signature')
+  @UseGuards(JwtAuthGuard)
+  getMySignature(@CurrentUser() user: RequestUser) {
+    return this.authService.getSignature(user.id);
+  }
+
+  @Patch('me/signature')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  updateMySignature(@CurrentUser() user: RequestUser, @Body() dto: UpdateUserSignatureDto) {
+    return this.authService.updateSignature(user.id, dto);
   }
 }

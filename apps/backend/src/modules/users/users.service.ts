@@ -1,5 +1,6 @@
 import { Injectable, Inject, NotFoundException, ConflictException } from '@nestjs/common';
 import { eq, ne, and, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import * as bcrypt from 'bcryptjs';
 import { DRIZZLE } from '../../database/database.module';
 import { users } from '../../database/schema';
@@ -12,7 +13,7 @@ export class UsersService {
   constructor(@Inject(DRIZZLE) private readonly db: any) {}
 
   async findAll(): Promise<UserResponseDto[]> {
-    const managers = this.db.alias(users, 'managers');
+    const managers = alias(users, 'managers');
     const result = await this.db
       .select({
         id: users.id,
@@ -20,7 +21,7 @@ export class UsersService {
         nip: users.nip,
         username: users.username,
         role: users.role,
-        jabatan: users.jabatan,
+        jobTitle: users.jobTitle,
         managerId: users.managerId,
         managerName: managers.name,
         createdAt: users.createdAt,
@@ -33,7 +34,7 @@ export class UsersService {
   }
 
   async findById(id: string): Promise<UserResponseDto> {
-    const managers = this.db.alias(users, 'managers');
+    const managers = alias(users, 'managers');
     const [user] = await this.db
       .select({
         id: users.id,
@@ -41,7 +42,7 @@ export class UsersService {
         nip: users.nip,
         username: users.username,
         role: users.role,
-        jabatan: users.jabatan,
+        jobTitle: users.jobTitle,
         managerId: users.managerId,
         managerName: managers.name,
         createdAt: users.createdAt,
@@ -63,7 +64,7 @@ export class UsersService {
         nip: users.nip,
         username: users.username,
         role: users.role,
-        jabatan: users.jabatan,
+        jobTitle: users.jobTitle,
         managerId: users.managerId,
         managerName: sql<string>`null`,
         createdAt: users.createdAt,
@@ -72,9 +73,9 @@ export class UsersService {
       .where(eq(users.managerId, managerId));
   }
 
-  async findManagers(): Promise<{ id: string; name: string; jabatan: string }[]> {
+  async findManagers(): Promise<{ id: string; name: string; jobTitle: string }[]> {
     return this.db
-      .select({ id: users.id, name: users.name, jabatan: users.jabatan })
+      .select({ id: users.id, name: users.name, jobTitle: users.jobTitle })
       .from(users)
       .where(eq(users.role, 'manager'));
   }
@@ -92,7 +93,7 @@ export class UsersService {
         username: dto.username,
         passwordHash,
         role: dto.role,
-        jabatan: dto.jabatan,
+        jobTitle: dto.jobTitle,
         managerId: dto.managerId ?? null,
       })
       .returning();
@@ -107,7 +108,7 @@ export class UsersService {
       await this.assertUsernameAndNipAreUnique(dto.username, dto.nip, id);
     }
 
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, unknown> = {
       updatedAt: new Date(),
     };
 
@@ -115,7 +116,7 @@ export class UsersService {
     if (dto.nip) updateData.nip = dto.nip;
     if (dto.username) updateData.username = dto.username;
     if (dto.role) updateData.role = dto.role;
-    if (dto.jabatan) updateData.jabatan = dto.jabatan;
+    if (dto.jobTitle !== undefined) updateData.jobTitle = dto.jobTitle;
     if ('managerId' in dto) updateData.managerId = dto.managerId;
     if (dto.password) updateData.passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
 

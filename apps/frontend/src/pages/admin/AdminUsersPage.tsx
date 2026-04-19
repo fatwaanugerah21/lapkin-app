@@ -62,7 +62,7 @@ export const AdminUsersPage = () => {
     <div className="p-6">
       <PageHeader
         title="Kelola Pengguna"
-        subtitle="Tambah, edit, dan hapus akun pengguna sistem"
+        subtitle="Tambah, ubah, dan hapus akun pengguna sistem"
         action={
           <Button onClick={() => setShowCreateModal(true)}>
             <Plus className="w-4 h-4" />

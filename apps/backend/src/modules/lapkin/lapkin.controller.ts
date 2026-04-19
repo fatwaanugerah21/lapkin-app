@@ -2,7 +2,9 @@ import {
   Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, HttpCode,
 } from '@nestjs/common';
 import { LapkinService } from './lapkin.service';
-import { CreateLapkinDto, CreateLapkinRowDto, UpdateLapkinRowDto, EvaluateRowDto } from './lapkin.dto';
+import {
+  CreateLapkinDto, CreateLapkinRowDto, UpdateLapkinRowDto, ManagerUpdateRowScoresDto,
+} from './lapkin.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles, CurrentUser } from '../../common/decorators';
@@ -48,6 +50,20 @@ export class LapkinController {
     return this.lapkinService.unlock(id, user);
   }
 
+  @Patch(':id/sign-by-manager')
+  @Roles('manager')
+  @HttpCode(200)
+  signByManager(@Param('id') id: string, @CurrentUser() user: RequestUser) {
+    return this.lapkinService.signLapkinByManager(id, user);
+  }
+
+  @Patch(':id/sign-by-employee')
+  @Roles('pegawai')
+  @HttpCode(200)
+  signByEmployee(@Param('id') id: string, @CurrentUser() user: RequestUser) {
+    return this.lapkinService.signLapkinByEmployee(id, user);
+  }
+
   @Post(':id/rows')
   @Roles('pegawai')
   addRow(
@@ -80,14 +96,24 @@ export class LapkinController {
     return this.lapkinService.deleteRow(id, rowId, user);
   }
 
+  @Patch(':id/rows/:rowId/scores')
+  @Roles('manager')
+  managerUpdateRowScores(
+    @Param('id') id: string,
+    @Param('rowId') rowId: string,
+    @Body() dto: ManagerUpdateRowScoresDto,
+    @CurrentUser() user: RequestUser,
+  ) {
+    return this.lapkinService.managerUpdateRowScores(id, rowId, dto, user);
+  }
+
   @Patch(':id/rows/:rowId/evaluate')
   @Roles('manager')
   evaluateRow(
     @Param('id') id: string,
     @Param('rowId') rowId: string,
-    @Body() dto: EvaluateRowDto,
     @CurrentUser() user: RequestUser,
   ) {
-    return this.lapkinService.evaluateRow(id, rowId, dto, user);
+    return this.lapkinService.evaluateRow(id, rowId, user);
   }
 }

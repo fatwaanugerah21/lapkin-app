@@ -1,55 +1,81 @@
 export interface CreateLapkinDto {
-  tanggal: string; // ISO date string YYYY-MM-DD
+  reportDate: string; // ISO date YYYY-MM-DD
+}
+
+export interface LapkinRowActivityItemDto {
+  taskDescription: string;
+  resultDescription: string;
+  performancePercent?: number | null;
+  fieldDutyPercent?: number | null;
+  finalScore?: number | null;
+  notWorkingPercent?: number | null;
+  isRest?: boolean;
+  notes?: string | null;
 }
 
 export interface UpdateLapkinRowDto {
-  waktuMulai?: string;
-  waktuSelesai?: string;
-  uraianTugas?: string;
-  uraianHasil?: string;
-  hasilKinerja?: number | null;
-  tugasDinasLuar?: number | null;
-  ket?: string | null;
+  startTime?: string;
+  endTime?: string;
+  activities?: LapkinRowActivityItemDto[];
 }
 
 export interface CreateLapkinRowDto {
-  waktuMulai: string;
-  waktuSelesai: string;
-  uraianTugas: string;
-  uraianHasil: string;
-  hasilKinerja?: number | null;
-  tugasDinasLuar?: number | null;
-  ket?: string | null;
+  startTime: string;
+  endTime: string;
+  activities: LapkinRowActivityItemDto[];
 }
 
-export interface EvaluateRowDto {
-  nilaiAkhir: number;
+/** Manager-only: replace activity percents for a locked row; task/result must match server. */
+export interface ManagerUpdateRowScoresDto {
+  activities: LapkinRowActivityItemDto[];
+}
+
+export interface LapkinRowActivityResponseDto {
+  taskDescription: string;
+  resultDescription: string;
+  performancePercent: string | null;
+  fieldDutyPercent: string | null;
+  finalScore: string | null;
+  notWorkingPercent: string | null;
+  isRest: boolean;
+  notes: string | null;
 }
 
 export interface LapkinRowResponseDto {
   id: string;
   lapkinId: string;
-  no: number;
-  waktuMulai: string;
-  waktuSelesai: string;
-  uraianTugas: string;
-  uraianHasil: string;
-  hasilKinerja: string | null;
-  tugasDinasLuar: string | null;
-  ket: string | null;
-  nilaiAkhir: string | null;
+  lineNumber: number;
+  startTime: string;
+  endTime: string;
+  activities: LapkinRowActivityResponseDto[];
+  managerAcknowledged: boolean;
 }
 
 export interface LapkinResponseDto {
   id: string;
-  tanggal: string;
+  reportDate: string;
   status: 'draft' | 'locked' | 'evaluated';
-  pegawaiId: string;
-  pegawaiName: string;
-  pegawaiNip: string;
-  pegawaiJabatan: string;
+  employeeId: string;
+  employeeName: string;
+  employeeNip: string;
+  employeeJobTitle: string;
+  /** Employee's user.manager_id (appraiser). */
+  managerId: string | null;
   managerName: string | null;
-  managerJabatan: string | null;
+  managerNip: string | null;
+  managerJobTitle: string | null;
+  /** PNG data URL from employee profile, for footer. */
+  employeeSignatureUrl: string | null;
+  /** PNG data URL from manager profile, for footer. */
+  managerSignatureUrl: string | null;
+  /** Set when the employee confirms Sign this LAPKIN (while locked). */
+  employeeSignedAt: string | null;
+  /** True when employee_signed_at is set. */
+  isSignedByEmployee: boolean;
+  /** Set when manager confirms LAPKIN sign-off; status becomes evaluated at the same time. */
+  managerSignedAt: string | null;
+  /** True when manager_signed_at is set (Sign this LAPKIN). */
+  isSignedByManager: boolean;
   rows: LapkinRowResponseDto[];
   createdAt: Date;
   updatedAt: Date;

@@ -22,7 +22,7 @@ export const LoginPage = () => {
     e.preventDefault();
     const user = await run(
       () => login(username, password).then(() => useAuthStore.getState().user),
-      'Login berhasil',
+      'Berhasil masuk',
     );
     if (user) navigate(roleRedirectPath[user.role] ?? '/');
   };
@@ -41,20 +41,20 @@ export const LoginPage = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             id="username"
-            label="Username"
+            label="Nama pengguna"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Masukkan username..."
+            placeholder="Masukkan nama pengguna..."
             autoComplete="username"
             required
           />
           <Input
             id="password"
-            label="Password"
+            label="Kata sandi"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Masukkan password..."
+            placeholder="Masukkan kata sandi..."
             autoComplete="current-password"
             required
           />

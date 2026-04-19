@@ -9,7 +9,15 @@ const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status;
+    const url = (error.config?.url ?? '').replace(/\?.*$/, '');
+    const method = (error.config?.method ?? 'get').toLowerCase();
+
+    // Session check and failed login are expected 401s — do not hard-navigate (would loop on /login).
+    const skipRedirect =
+      url === '/auth/me' || (method === 'post' && url === '/auth/login');
+
+    if (status === 401 && !skipRedirect) {
       window.location.href = '/login';
     }
     return Promise.reject(error);

@@ -18,6 +18,7 @@ import { ManagerLapkinDetail } from './pages/manager/ManagerLapkinDetail';
 
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminUsersPage } from './pages/admin/AdminUsersPage';
+import { AccountPage } from './pages/account/AccountPage';
 
 export const App = () => {
   const { initialize } = useAuthStore();
@@ -35,6 +36,7 @@ export const App = () => {
         {/* Pegawai */}
         <Route element={<ProtectedRoute allowedRoles={['pegawai']}><AppLayout /></ProtectedRoute>}>
           <Route path="/pegawai" element={<PegawaiDashboard />} />
+          <Route path="/pegawai/account" element={<AccountPage />} />
           <Route path="/pegawai/lapkin" element={<PegawaiLapkinList />} />
           <Route path="/pegawai/lapkin/:id" element={<PegawaiLapkinDetail />} />
         </Route>
@@ -42,6 +44,7 @@ export const App = () => {
         {/* Manager */}
         <Route element={<ProtectedRoute allowedRoles={['manager']}><AppLayout /></ProtectedRoute>}>
           <Route path="/manager" element={<ManagerDashboard />} />
+          <Route path="/manager/account" element={<AccountPage />} />
           <Route path="/manager/lapkin" element={<ManagerLapkinList />} />
           <Route path="/manager/lapkin/:id" element={<ManagerLapkinDetail />} />
         </Route>
@@ -49,6 +52,7 @@ export const App = () => {
         {/* Admin */}
         <Route element={<ProtectedRoute allowedRoles={['admin']}><AppLayout /></ProtectedRoute>}>
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/account" element={<AccountPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
         </Route>
 
