@@ -277,7 +277,7 @@ function LapkinSignatureFooter({ lapkin }: { lapkin: Lapkin }) {
   const isEmployeeForThisLapkin = user?.id === lapkin.employeeId;
 
   return (
-    <div className="px-4 py-4 border-t border-gray-200 grid grid-cols-2 gap-6 text-xs sm:text-sm">
+    <div className="lapkin-print-signature-zone px-4 py-4 border-t border-gray-200 grid grid-cols-2 gap-6 text-xs sm:text-sm">
       <div className="text-center">
         <p className="font-medium text-gray-700 mb-1.5">PEJABAT PENILAI,</p>
         <div className="min-h-[4.5rem] flex flex-col items-center justify-center gap-2 mb-2">
@@ -489,8 +489,8 @@ export const LapkinTable = ({ lapkin }: LapkinTableProps) => {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-      <div className="overflow-x-auto">
+    <div className="lapkin-print-table bg-white border border-gray-200 rounded-xl overflow-hidden print:rounded-lg print:shadow-none">
+      <div className="overflow-x-auto print:overflow-visible">
         <table className="w-full text-xs sm:text-sm">
           <thead>
             <tr className="bg-primary-700 text-white">
@@ -504,7 +504,7 @@ export const LapkinTable = ({ lapkin }: LapkinTableProps) => {
               <th className="px-2 py-2 text-center font-semibold w-24">NILAI AKHIR (%)</th>
               <th className="px-2 py-2 text-center font-semibold w-20">KET</th>
               {(canEdit || canEvaluate) && (
-                <th className="px-2 py-2 text-center font-semibold w-24">AKSI</th>
+                <th className="px-2 py-2 text-center font-semibold w-24 print:hidden">AKSI</th>
               )}
             </tr>
           </thead>
@@ -541,7 +541,7 @@ export const LapkinTable = ({ lapkin }: LapkinTableProps) => {
                     </td>
                     <td className="px-3 py-3 text-center text-gray-400">–</td>
                     {(canEdit || canEvaluate) && (
-                      <td className="px-3 py-3 align-middle">
+                      <td className="px-3 py-3 align-middle print:hidden">
                         <RowActionButtons
                           canEdit={canEdit}
                           canEvaluate={canShowEvaluateStar}
@@ -698,7 +698,7 @@ export const LapkinTable = ({ lapkin }: LapkinTableProps) => {
                       </div>
                     </td>
                     {index === 0 && (canEdit || canEvaluate) && (
-                      <td rowSpan={rowCount} className="px-3 py-3 align-middle border-l border-gray-100">
+                      <td rowSpan={rowCount} className="px-3 py-3 align-middle border-l border-gray-100 print:hidden">
                         <RowActionButtons
                           canEdit={canEdit}
                           canEvaluate={canShowEvaluateStar}
@@ -718,7 +718,7 @@ export const LapkinTable = ({ lapkin }: LapkinTableProps) => {
       </div>
 
       {canEdit && (
-        <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
+        <div className="px-4 py-3 border-t border-gray-100 bg-gray-50 print:hidden">
           <Button size="sm" onClick={() => setShowAddModal(true)}>
             + Tambah Baris
           </Button>

@@ -45,3 +45,34 @@
     margin: 0;
   }
 }
+
+@page {
+  size: A4 landscape;
+  margin: 12mm;
+}
+
+@media print {
+  body {
+    background: #fff !important;
+    color: #111827;
+  }
+
+  .lapkin-print-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .lapkin-print-table input.input-number-no-spin {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+  }
+
+  .lapkin-print-signature-zone button,
+  .lapkin-print-signature-zone a {
+    display: none !important;
+  }
+}

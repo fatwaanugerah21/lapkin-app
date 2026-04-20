@@ -6,6 +6,7 @@ import { useAuthStore } from '../../stores/auth.store';
 import { LapkinHeader } from '../../components/lapkin/LapkinHeader';
 import { LapkinTable } from '../../components/lapkin/LapkinTable';
 import { LapkinActions } from '../../components/lapkin/LapkinActions';
+import { LapkinPrintButton } from '../../components/lapkin/LapkinPrintButton';
 import { StatusBadge, SignedByManagerBadge } from '../../components/ui/Badge';
 import { PageSpinner } from '../../components/ui/Spinner';
 import { Card } from '../../components/ui/Card';
@@ -53,35 +54,39 @@ export const ManagerLapkinDetail = () => {
     user?.role !== 'direktur' || activeLapkin.employeeRole === 'manager';
 
   return (
-    <div className="p-4 space-y-3">
-      <WorkflowHint variant="supervisor" />
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <button
-          type="button"
-          onClick={() => navigate(backListPath)}
-          className="flex items-center gap-2 text-xs text-gray-500 hover:text-gray-700 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Kembali ke daftar
-        </button>
-        <div className="flex flex-wrap items-center justify-end gap-1.5">
-          <StatusBadge status={activeLapkin.status} />
-          <SignedByManagerBadge isSigned={activeLapkin.isSignedByManager === true} />
-          <LapkinActions lapkin={activeLapkin} />
+    <div className="p-4 space-y-3 print:p-3 print:space-y-2">
+      <div className="print:hidden space-y-3">
+        <WorkflowHint variant="supervisor" />
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => navigate(backListPath)}
+            className="flex items-center gap-2 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Kembali ke daftar
+          </button>
+          <div className="flex flex-wrap items-center justify-end gap-1.5">
+            <StatusBadge status={activeLapkin.status} />
+            <SignedByManagerBadge isSigned={activeLapkin.isSignedByManager === true} />
+            <LapkinPrintButton />
+            <LapkinActions lapkin={activeLapkin} />
+          </div>
         </div>
       </div>
 
-      <LapkinHeader lapkin={activeLapkin} />
+      <div className="space-y-3 print:space-y-2">
+        <LapkinHeader lapkin={activeLapkin} />
 
-      {user?.role === 'direktur' && activeLapkin.employeeRole === 'pegawai' && (
-        <p className="text-xs text-gray-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-          LAPKIN pegawai ini dinilai oleh manajer langsungnya. Anda dapat membaca ringkasan; paraf penilai hanya untuk LAPKIN yang pemiliknya berperan sebagai manajer.
-        </p>
-      )}
+        {user?.role === 'direktur' && activeLapkin.employeeRole === 'pegawai' && (
+          <p className="text-xs text-gray-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 print:hidden">
+            LAPKIN pegawai ini dinilai oleh manajer langsungnya. Anda dapat membaca ringkasan; paraf penilai hanya untuk LAPKIN yang pemiliknya berperan sebagai manajer.
+          </p>
+        )}
 
       {/* Evaluation progress */}
       {showSupervisorProgress && activeLapkin.status === 'locked' && totalRows > 0 && (
-        <Card padding={false} className="p-3">
+        <Card padding={false} className="p-3 print:hidden">
           <div className="flex items-center justify-between mb-1.5">
             <p className="text-xs font-medium text-gray-700">Progres evaluasi</p>
             <p className="text-xs text-gray-500 tabular-nums">{evaluatedCount} / {totalRows} baris</p>
@@ -100,7 +105,8 @@ export const ManagerLapkinDetail = () => {
         </Card>
       )}
 
-      <LapkinTable lapkin={activeLapkin} />
+        <LapkinTable lapkin={activeLapkin} />
+      </div>
     </div>
   );
 };

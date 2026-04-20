@@ -62,7 +62,7 @@ export const Sidebar = () => {
   const handleLogout = () => run(logout, 'Berhasil keluar');
 
   return (
-    <aside className="w-64 h-full min-h-0 shrink-0 bg-gray-900 flex flex-col overflow-hidden">
+    <aside className="w-64 h-full min-h-0 shrink-0 bg-gray-900 flex flex-col overflow-hidden print:hidden">
       {/* Logo */}
       <div className="shrink-0 px-6 py-5 border-b border-gray-700">
         <h1 className="text-white font-bold text-xl tracking-tight">LAPKIN</h1>

@@ -29,7 +29,11 @@ export const App = () => {
 
   return (
     <BrowserRouter>
-      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+      <Toaster
+        position="top-right"
+        toastOptions={{ duration: 3000 }}
+        containerClassName="print:hidden"
+      />
       <Routes>
         {/* Public */}
         <Route path="/login" element={<LoginPage />} />
