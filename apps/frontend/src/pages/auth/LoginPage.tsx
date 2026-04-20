@@ -9,6 +9,7 @@ import { FtsDigihouseCredit } from '../../components/layout/FtsDigihouseCredit';
 const roleRedirectPath: Record<string, string> = {
   admin: '/admin',
   manager: '/manager',
+  direktur: '/direktur',
   pegawai: '/pegawai',
 };
 

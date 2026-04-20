@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'pegawai' | 'manager';
+export type UserRole = 'admin' | 'pegawai' | 'manager' | 'direktur';
 export type LapkinStatus = 'draft' | 'locked' | 'evaluated';
 
 /** Label persisted for rest activities (must match backend). */
@@ -52,6 +52,7 @@ export interface Lapkin {
   reportDate: string;
   status: LapkinStatus;
   employeeId: string;
+  employeeRole: UserRole;
   employeeName: string;
   employeeNip: string;
   employeeJobTitle: string;

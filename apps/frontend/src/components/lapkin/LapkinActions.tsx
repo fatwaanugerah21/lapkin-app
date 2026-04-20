@@ -20,8 +20,11 @@ export const LapkinActions = ({ lapkin }: LapkinActionsProps) => {
 
   const [confirmAction, setConfirmAction] = useState<'lock' | 'unlock' | 'delete' | null>(null);
 
-  const isPegawaiOwner = user?.role === 'pegawai' && lapkin.employeeId === user.id;
-  if (!isPegawaiOwner) return null;
+  if (!user) return null;
+  const isEmployeeOwner =
+    lapkin.employeeId === user.id &&
+    (user.role === 'pegawai' || user.role === 'manager');
+  if (!isEmployeeOwner) return null;
 
   const handleConfirm = async () => {
     if (confirmAction === 'lock') {
@@ -30,7 +33,9 @@ export const LapkinActions = ({ lapkin }: LapkinActionsProps) => {
       await run(() => unlockLapkin(lapkin.id), 'LAPKIN berhasil dibuka');
     } else if (confirmAction === 'delete') {
       const result = await run(() => deleteLapkin(lapkin.id), 'LAPKIN berhasil dihapus');
-      if (result !== null) navigate('/pegawai/lapkin');
+      if (result !== null) {
+        navigate(user.role === 'manager' ? '/manager/lapkin/saya' : '/pegawai/lapkin');
+      }
     }
     setConfirmAction(null);
   };
@@ -58,6 +63,7 @@ export const LapkinActions = ({ lapkin }: LapkinActionsProps) => {
   };
 
   const active = confirmAction ? confirmConfig[confirmAction] : null;
+  const hasRows = lapkin.rows.length > 0;
 
   return (
     <>
@@ -68,6 +74,7 @@ export const LapkinActions = ({ lapkin }: LapkinActionsProps) => {
               variant="primary"
               size="sm"
               onClick={() => setConfirmAction('lock')}
+              disabled={!hasRows}
               isLoading={isLoading}
             >
               <Lock className="w-4 h-4" />

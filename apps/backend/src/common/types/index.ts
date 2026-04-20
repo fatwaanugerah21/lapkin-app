@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'pegawai' | 'manager';
+export type UserRole = 'admin' | 'pegawai' | 'manager' | 'direktur';
 
 export interface JwtPayload {
   sub: string;

@@ -16,13 +16,20 @@ const InfoRow = ({ label, value }: { label: string; value: string }) => (
 export const LapkinHeader = ({ lapkin }: LapkinHeaderProps) => {
   const reportDateLabel = format(new Date(lapkin.reportDate), 'EEEE, dd MMMM yyyy', { locale: idLocale });
 
+  const supervisorName =
+    lapkin.managerName?.trim()
+    || (lapkin.employeeRole === 'manager' ? '—' : '-');
+  const supervisorJobTitle =
+    lapkin.managerJobTitle?.trim()
+    || (lapkin.employeeRole === 'manager' ? 'Direktur' : '-');
+
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-2">
       <InfoRow label="NAMA" value={lapkin.employeeName} />
       <InfoRow label="NIP" value={lapkin.employeeNip} />
       <InfoRow label="JABATAN" value={lapkin.employeeJobTitle} />
-      <InfoRow label="NAMA ATASAN LANGSUNG" value={lapkin.managerName ?? '-'} />
-      <InfoRow label="JABATAN ATASAN LANGSUNG" value={lapkin.managerJobTitle ?? '-'} />
+      <InfoRow label="NAMA ATASAN LANGSUNG" value={supervisorName} />
+      <InfoRow label="JABATAN ATASAN LANGSUNG" value={supervisorJobTitle} />
       <InfoRow label="HARI / TANGGAL" value={reportDateLabel} />
     </div>
   );

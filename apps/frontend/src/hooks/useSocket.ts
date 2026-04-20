@@ -15,22 +15,22 @@ export const useSocket = () => {
 
     const onLapkinLocked = (lapkin: Lapkin) => {
       syncLapkin(lapkin);
-      if (user.role === 'manager') {
-        toast.success(`LAPKIN dari ${lapkin.employeeName} siap dievaluasi`);
+      if (user.role === 'manager' || user.role === 'direktur') {
+        toast.success(`LAPKIN dari ${lapkin.employeeName} siap ditinjau`);
       }
     };
 
     const onLapkinUnlocked = (lapkin: Lapkin) => {
       syncLapkin(lapkin);
-      if (user.role === 'manager') {
+      if (user.role === 'manager' || user.role === 'direktur') {
         toast(`LAPKIN dari ${lapkin.employeeName} dikembalikan ke draf`, { icon: '🔓' });
       }
     };
 
     const onLapkinEvaluated = (lapkin: Lapkin) => {
       syncLapkin(lapkin);
-      if (user.role === 'pegawai') {
-        toast.success('LAPKIN Anda telah dievaluasi oleh manajer');
+      if (lapkin.employeeId === user.id && (user.role === 'pegawai' || user.role === 'manager')) {
+        toast.success('LAPKIN Anda telah selesai dinilai dan ditandatangani atasan');
       }
     };
 

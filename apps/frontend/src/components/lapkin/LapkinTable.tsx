@@ -100,11 +100,11 @@ function allEvaluableRowsAcknowledgedForSign(lapkin: Lapkin): boolean {
 
 function ManagerSignatureZone({
   lapkin,
-  isManagerForThisLapkin,
+  isLineAppraiser,
   accountHref,
 }: {
   lapkin: Lapkin;
-  isManagerForThisLapkin: boolean;
+  isLineAppraiser: boolean;
   accountHref: string;
 }) {
   const signLapkinByManager = useLapkinStore((s) => s.signLapkinByManager);
@@ -132,7 +132,7 @@ function ManagerSignatureZone({
   }
 
   if (lapkin.managerSignatureUrl) {
-    if (!isManagerForThisLapkin) {
+    if (!isLineAppraiser) {
       return (
         <div className={`${dashedBoxClass} border-gray-200 bg-white`}>
           <span className="text-gray-500">Menunggu paraf penilai</span>
@@ -160,7 +160,7 @@ function ManagerSignatureZone({
     );
   }
 
-  if (isManagerForThisLapkin) {
+  if (isLineAppraiser) {
     return (
       <Link
         to={accountHref}
@@ -265,22 +265,25 @@ function LapkinSignatureFooter({ lapkin }: { lapkin: Lapkin }) {
   const user = useAuthStore((s) => s.user);
   const accountHref = useMemo(() => {
     if (user?.role === 'manager') return '/manager/account';
+    if (user?.role === 'direktur') return '/direktur/account';
     if (user?.role === 'admin') return '/admin/account';
     return '/pegawai/account';
   }, [user?.role]);
 
-  const isManagerForThisLapkin =
-    user?.role === 'manager' && lapkin.managerId != null && user.id === lapkin.managerId;
+  const isLineAppraiser =
+    lapkin.managerId != null &&
+    user?.id === lapkin.managerId &&
+    (user?.role === 'manager' || user?.role === 'direktur');
   const isEmployeeForThisLapkin = user?.id === lapkin.employeeId;
 
   return (
-    <div className="px-6 py-6 border-t border-gray-200 grid grid-cols-2 gap-8 text-sm">
+    <div className="px-4 py-4 border-t border-gray-200 grid grid-cols-2 gap-6 text-xs sm:text-sm">
       <div className="text-center">
-        <p className="font-medium text-gray-700 mb-2">PEJABAT PENILAI,</p>
-        <div className="min-h-[5rem] flex flex-col items-center justify-center gap-2 mb-3">
+        <p className="font-medium text-gray-700 mb-1.5">PEJABAT PENILAI,</p>
+        <div className="min-h-[4.5rem] flex flex-col items-center justify-center gap-2 mb-2">
           <ManagerSignatureZone
             lapkin={lapkin}
-            isManagerForThisLapkin={isManagerForThisLapkin}
+            isLineAppraiser={isLineAppraiser}
             accountHref={accountHref}
           />
         </div>
@@ -290,8 +293,8 @@ function LapkinSignatureFooter({ lapkin }: { lapkin: Lapkin }) {
         )}
       </div>
       <div className="text-center">
-        <p className="font-medium text-gray-700 mb-2">YANG MEMBUAT LAPORAN,</p>
-        <div className="min-h-[5rem] flex flex-col items-center justify-center gap-2 mb-3">
+        <p className="font-medium text-gray-700 mb-1.5">YANG MEMBUAT LAPORAN,</p>
+        <div className="min-h-[4.5rem] flex flex-col items-center justify-center gap-2 mb-2">
           <EmployeeSignatureZone
             lapkin={lapkin}
             isEmployeeForThisLapkin={isEmployeeForThisLapkin}
@@ -393,13 +396,21 @@ export const LapkinTable = ({ lapkin }: LapkinTableProps) => {
   lapkinRef.current = lapkin;
   draftsRef.current = scoreDraftsByRow;
 
-  const isPegawaiOwner = user?.role === 'pegawai' && lapkin.employeeId === user.id;
-  const isManager = user?.role === 'manager';
+  const isEmployeeOwner =
+    lapkin.employeeId === user?.id &&
+    (user?.role === 'pegawai' || user?.role === 'manager');
   const isDraft = lapkin.status === 'draft';
   const isLocked = lapkin.status === 'locked';
 
-  const canEdit = isPegawaiOwner && isDraft;
-  const canEvaluate = isManager && isLocked;
+  const canEdit = isEmployeeOwner && isDraft;
+  const canEvaluateAsManager =
+    user?.role === 'manager' && isLocked && lapkin.managerId === user.id;
+  const canEvaluateAsDirektur =
+    user?.role === 'direktur' &&
+    isLocked &&
+    lapkin.employeeRole === 'manager' &&
+    lapkin.managerId === user.id;
+  const canEvaluate = canEvaluateAsManager || canEvaluateAsDirektur;
 
   const actionColCount = canEdit || canEvaluate ? 1 : 0;
   const emptyColSpan = 8 + actionColCount;
@@ -480,20 +491,20 @@ export const LapkinTable = ({ lapkin }: LapkinTableProps) => {
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs sm:text-sm">
           <thead>
             <tr className="bg-primary-700 text-white">
-              <th className="px-3 py-3 text-center font-semibold w-10">NO</th>
-              <th className="px-3 py-3 text-center font-semibold w-28">WAKTU</th>
-              <th className="px-3 py-3 text-left font-semibold">URAIAN TUGAS JABATAN / KINERJA PROSES BULANAN</th>
-              <th className="px-3 py-3 text-left font-semibold">URAIAN HASIL</th>
-              <th className="px-3 py-3 text-center font-semibold w-20">HASIL KINERJA (%)</th>
-              <th className="px-3 py-3 text-center font-semibold w-20">TUGAS DINAS LUAR (%)</th>
-              <th className="px-3 py-3 text-center font-semibold w-20">TIDAK MASUK KERJA ATAU SECARA NYATA TIDAK MELAKSANAN TUGAS (%)</th>
-              <th className="px-3 py-3 text-center font-semibold w-24">NILAI AKHIR (%)</th>
-              <th className="px-3 py-3 text-center font-semibold w-20">KET</th>
+              <th className="px-2 py-2 text-center font-semibold w-10">NO</th>
+              <th className="px-2 py-2 text-center font-semibold w-28">WAKTU</th>
+              <th className="px-2 py-2 text-left font-semibold">URAIAN TUGAS JABATAN / KINERJA PROSES BULANAN</th>
+              <th className="px-2 py-2 text-left font-semibold">URAIAN HASIL</th>
+              <th className="px-2 py-2 text-center font-semibold w-20">HASIL KINERJA (%)</th>
+              <th className="px-2 py-2 text-center font-semibold w-20">TUGAS DINAS LUAR (%)</th>
+              <th className="px-2 py-2 text-center font-semibold w-20">TIDAK MASUK KERJA ATAU SECARA NYATA TIDAK MELAKSANAN TUGAS (%)</th>
+              <th className="px-2 py-2 text-center font-semibold w-24">NILAI AKHIR (%)</th>
+              <th className="px-2 py-2 text-center font-semibold w-20">KET</th>
               {(canEdit || canEvaluate) && (
-                <th className="px-3 py-3 text-center font-semibold w-24">AKSI</th>
+                <th className="px-2 py-2 text-center font-semibold w-24">AKSI</th>
               )}
             </tr>
           </thead>

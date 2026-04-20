@@ -11,8 +11,9 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { Spinner } from '../../components/ui/Spinner';
 import { useAsyncAction } from '../../hooks/useAsyncAction';
 import { Lapkin } from '../../types';
+import { WorkflowHint } from '../../components/layout/WorkflowHint';
 
-export const PegawaiLapkinList = () => {
+export const EmployeeLapkinList = () => {
   const { lapkins, fetchAll, createLapkin, isLoading } = useLapkinStore();
   const { isLoading: isCreating, run } = useAsyncAction();
   const navigate = useNavigate();
@@ -32,10 +33,10 @@ export const PegawaiLapkinList = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4">
       <PageHeader
         title="LAPKIN Saya"
-        subtitle="Laporan kinerja harian Anda"
+        subtitle="Laporan kinerja harian Anda — isi di draf, kunci bila siap dinilai atasan"
         action={
           <Button onClick={() => setShowCreateModal(true)}>
             <Plus className="w-4 h-4" />
@@ -43,6 +44,8 @@ export const PegawaiLapkinList = () => {
           </Button>
         }
       />
+
+      <WorkflowHint variant="pegawai" className="mb-3" />
 
       {isLoading ? (
         <div className="flex justify-center py-12"><Spinner /></div>

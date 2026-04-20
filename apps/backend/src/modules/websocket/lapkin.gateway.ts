@@ -38,31 +38,24 @@ export class LapkinGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  notifyManagerLapkinLocked(lapkin: LapkinResponseDto): void {
-    // Notify the manager that their direct report locked a LAPKIN
-    this.emitToUserIfConnected(lapkin, 'lapkin:locked');
+  /** Notify the LAPKIN owner's direct supervisor (room user:{supervisorId}). */
+  notifySupervisorLapkinLocked(supervisorId: string | null, lapkin: LapkinResponseDto): void {
+    if (!supervisorId) return;
+    this.server.to(`user:${supervisorId}`).emit('lapkin:locked', lapkin);
   }
 
-  notifyManagerLapkinUnlocked(lapkin: LapkinResponseDto): void {
-    this.emitToUserIfConnected(lapkin, 'lapkin:unlocked');
+  notifySupervisorLapkinUnlocked(supervisorId: string | null, lapkin: LapkinResponseDto): void {
+    if (!supervisorId) return;
+    this.server.to(`user:${supervisorId}`).emit('lapkin:unlocked', lapkin);
   }
 
   notifyPegawaiLapkinEvaluated(lapkin: LapkinResponseDto): void {
-    // Notify the pegawai that their LAPKIN was evaluated
     this.server.to(`user:${lapkin.employeeId}`).emit('lapkin:evaluated', lapkin);
   }
 
-  notifyManagerLapkinEmployeeSigned(lapkin: LapkinResponseDto): void {
-    if (lapkin.managerId) {
-      this.server.to(`user:${lapkin.managerId}`).emit('lapkin:employee-signed', lapkin);
-    }
-  }
-
-  private emitToUserIfConnected(lapkin: LapkinResponseDto, event: string): void {
-    // We don't have manager id here directly, but the frontend manager
-    // will receive the update via the standard refresh mechanism
-    // Broadcasting to all connected managers is handled via room per-user
-    this.server.emit(event, lapkin);
+  notifySupervisorLapkinEmployeeSigned(supervisorId: string | null, lapkin: LapkinResponseDto): void {
+    if (!supervisorId) return;
+    this.server.to(`user:${supervisorId}`).emit('lapkin:employee-signed', lapkin);
   }
 
   private extractToken(socket: Socket): string {

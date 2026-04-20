@@ -56,6 +56,8 @@ export interface LapkinResponseDto {
   reportDate: string;
   status: 'draft' | 'locked' | 'evaluated';
   employeeId: string;
+  /** Role of the LAPKIN owner (users.role). */
+  employeeRole: 'admin' | 'pegawai' | 'manager' | 'direktur';
   employeeName: string;
   employeeNip: string;
   employeeJobTitle: string;

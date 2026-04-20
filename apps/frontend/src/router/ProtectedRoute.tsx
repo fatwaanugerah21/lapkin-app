@@ -12,6 +12,7 @@ interface ProtectedRouteProps {
 const roleHomePath: Record<UserRole, string> = {
   admin: '/admin',
   manager: '/manager',
+  direktur: '/direktur',
   pegawai: '/pegawai',
 };
 

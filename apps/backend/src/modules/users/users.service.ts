@@ -1,4 +1,6 @@
-import { Injectable, Inject, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable, Inject, NotFoundException, ConflictException, BadRequestException,
+} from '@nestjs/common';
 import { eq, ne, and, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import * as bcrypt from 'bcryptjs';
@@ -82,8 +84,18 @@ export class UsersService {
 
   async create(dto: CreateUserDto): Promise<UserResponseDto> {
     await this.assertUsernameAndNipAreUnique(dto.username, dto.nip);
+    if (dto.role === 'direktur') await this.assertNoOtherDirektur();
 
     const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
+
+    let managerId = dto.managerId ?? null;
+    if (dto.role === 'manager') {
+      const dirId = await this.getDirekturId();
+      if (!dirId) {
+        throw new BadRequestException('Create a director account before adding managers');
+      }
+      managerId = dirId;
+    }
 
     const [created] = await this.db
       .insert(users)
@@ -94,7 +106,7 @@ export class UsersService {
         passwordHash,
         role: dto.role,
         jobTitle: dto.jobTitle,
-        managerId: dto.managerId ?? null,
+        managerId,
       })
       .returning();
 
@@ -108,6 +120,8 @@ export class UsersService {
       await this.assertUsernameAndNipAreUnique(dto.username, dto.nip, id);
     }
 
+    if (dto.role === 'direktur') await this.assertNoOtherDirektur(id);
+
     const updateData: Record<string, unknown> = {
       updatedAt: new Date(),
     };
@@ -117,8 +131,26 @@ export class UsersService {
     if (dto.username) updateData.username = dto.username;
     if (dto.role) updateData.role = dto.role;
     if (dto.jobTitle !== undefined) updateData.jobTitle = dto.jobTitle;
-    if ('managerId' in dto) updateData.managerId = dto.managerId;
     if (dto.password) updateData.passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
+
+    const [existing] = await this.db
+      .select({ role: users.role })
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
+    const effectiveRole = dto.role ?? existing?.role;
+
+    if (effectiveRole === 'manager') {
+      const dirId = await this.getDirekturId();
+      if (!dirId) {
+        throw new BadRequestException('No director account exists. Add a director user first.');
+      }
+      updateData.managerId = dirId;
+    } else if (effectiveRole === 'pegawai' && 'managerId' in dto) {
+      updateData.managerId = dto.managerId;
+    } else if (dto.role === 'admin' || dto.role === 'direktur') {
+      updateData.managerId = null;
+    }
 
     await this.db.update(users).set(updateData).where(eq(users.id, id));
 
@@ -133,6 +165,23 @@ export class UsersService {
   private async assertUserExists(id: string): Promise<void> {
     const [user] = await this.db.select({ id: users.id }).from(users).where(eq(users.id, id)).limit(1);
     if (!user) throw new NotFoundException('User not found');
+  }
+
+  private async getDirekturId(): Promise<string | null> {
+    const [row] = await this.db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.role, 'direktur'))
+      .limit(1);
+    return row?.id ?? null;
+  }
+
+  private async assertNoOtherDirektur(excludeUserId?: string): Promise<void> {
+    const condition = excludeUserId
+      ? and(eq(users.role, 'direktur'), ne(users.id, excludeUserId))
+      : eq(users.role, 'direktur');
+    const [other] = await this.db.select({ id: users.id }).from(users).where(condition).limit(1);
+    if (other) throw new ConflictException('Only one director account is allowed in the system');
   }
 
   private async assertUsernameAndNipAreUnique(username?: string, nip?: string, excludeId?: string): Promise<void> {

@@ -1,7 +1,7 @@
 import {
   Injectable, Inject, NotFoundException, ForbiddenException, BadRequestException,
 } from '@nestjs/common';
-import { eq, and, inArray, asc } from 'drizzle-orm';
+import { eq, and, inArray, asc, or } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { DRIZZLE } from '../../database/database.module';
 import { lapkins, lapkinRows, lapkinRowActivities, users } from '../../database/schema';
@@ -25,6 +25,7 @@ export class LapkinService {
   async findAllForUser(user: RequestUser): Promise<LapkinResponseDto[]> {
     if (user.role === 'pegawai') return this.findByEmployee(user.id);
     if (user.role === 'manager') return this.findForManager(user.id);
+    if (user.role === 'direktur') return this.findForDirektur(user.id);
     return this.findAll();
   }
 
@@ -48,7 +49,7 @@ export class LapkinService {
     if (lapkin.status === 'evaluated') throw new BadRequestException('Cannot lock an evaluated LAPKIN');
     await this.updateStatus(lapkinId, 'locked');
     const updated = await this.buildLapkinResponse(lapkinId);
-    this.gateway.notifyManagerLapkinLocked(updated);
+    this.gateway.notifySupervisorLapkinLocked(updated.managerId, updated);
     return updated;
   }
 
@@ -62,7 +63,7 @@ export class LapkinService {
       .set({ status: 'draft', employeeSignedAt: null, updatedAt: new Date() })
       .where(eq(lapkins.id, lapkinId));
     const updated = await this.buildLapkinResponse(lapkinId);
-    this.gateway.notifyManagerLapkinUnlocked(updated);
+    this.gateway.notifySupervisorLapkinUnlocked(updated.managerId, updated);
     return updated;
   }
 
@@ -151,7 +152,7 @@ export class LapkinService {
     manager: RequestUser,
   ): Promise<LapkinResponseDto> {
     const lapkin = await this.buildLapkinResponse(lapkinId);
-    await this.assertManagerOwnsDirectReport(lapkin.employeeId, manager.id);
+    await this.assertCanEvaluateAsSupervisor(lapkin, manager);
 
     if (lapkin.status !== 'locked') {
       throw new BadRequestException('Can only edit scores on a LOCKED LAPKIN');
@@ -230,7 +231,7 @@ export class LapkinService {
     lapkinId: string, rowId: string, manager: RequestUser,
   ): Promise<LapkinResponseDto> {
     const lapkin = await this.buildLapkinResponse(lapkinId);
-    await this.assertManagerOwnsDirectReport(lapkin.employeeId, manager.id);
+    await this.assertCanEvaluateAsSupervisor(lapkin, manager);
 
     if (lapkin.status !== 'locked') {
       throw new BadRequestException('Can only evaluate a LOCKED LAPKIN');
@@ -285,17 +286,46 @@ export class LapkinService {
     const directReports = await this.db
       .select({ id: users.id })
       .from(users)
-      .where(eq(users.managerId, managerId));
-
-    if (!directReports.length) return [];
+      .where(and(eq(users.managerId, managerId), eq(users.role, 'pegawai')));
 
     const reportIds = directReports.map((u: { id: string }) => u.id);
+
+    const teamLockedEvaluated =
+      reportIds.length > 0
+        ? and(
+          inArray(lapkins.employeeId, reportIds),
+          inArray(lapkins.status, ['locked', 'evaluated']),
+        )
+        : undefined;
+
+    const ownLapkins = eq(lapkins.employeeId, managerId);
+
+    const whereClause =
+      teamLockedEvaluated != null ? or(teamLockedEvaluated, ownLapkins) : ownLapkins;
+
+    const records = await this.db
+      .select({ id: lapkins.id })
+      .from(lapkins)
+      .where(whereClause)
+      .orderBy(lapkins.reportDate);
+
+    return Promise.all(records.map((r: { id: string }) => this.buildLapkinResponse(r.id)));
+  }
+
+  private async findForDirektur(_direkturId: string): Promise<LapkinResponseDto[]> {
+    const visibleUsers = await this.db
+      .select({ id: users.id })
+      .from(users)
+      .where(inArray(users.role, ['manager', 'pegawai']));
+    const visibleIds = visibleUsers.map((u: { id: string }) => u.id);
+    if (!visibleIds.length) return [];
+
     const records = await this.db
       .select({ id: lapkins.id })
       .from(lapkins)
       .where(
         and(
-          inArray(lapkins.employeeId, reportIds),
+          inArray(lapkins.employeeId, visibleIds),
           inArray(lapkins.status, ['locked', 'evaluated']),
         ),
       )
@@ -322,6 +352,7 @@ export class LapkinService {
         reportDate: lapkins.reportDate,
         status: lapkins.status,
         employeeId: lapkins.employeeId,
+        employeeRole: users.role,
         employeeName: users.name,
         employeeNip: users.nip,
         employeeJobTitle: users.jobTitle,
@@ -343,6 +374,34 @@ export class LapkinService {
       .limit(1);
 
     if (!lapkin) throw new NotFoundException('LAPKIN not found');
+
+    let enriched = { ...lapkin };
+    if (
+      enriched.employeeRole === 'manager'
+      && (enriched.managerId == null || enriched.managerName == null)
+    ) {
+      const [dir] = await this.db
+        .select({
+          id: users.id,
+          name: users.name,
+          nip: users.nip,
+          jobTitle: users.jobTitle,
+          signatureDataUrl: users.signatureDataUrl,
+        })
+        .from(users)
+        .where(eq(users.role, 'direktur'))
+        .limit(1);
+      if (dir) {
+        enriched = {
+          ...enriched,
+          managerId: dir.id,
+          managerName: dir.name,
+          managerNip: dir.nip,
+          managerJobTitle: dir.jobTitle,
+          managerSignatureUrl: dir.signatureDataUrl,
+        };
+      }
+    }
 
     const rowsRaw = await this.db
       .select()
@@ -369,12 +428,12 @@ export class LapkinService {
     const rows: LapkinRowResponseDto[] = rowsRaw.map((r: typeof lapkinRows.$inferSelect) =>
       this.mapRowToDto(r, byRow.get(r.id) ?? []));
 
-    const managerSignedRaw = lapkin.managerSignedAt as Date | null | undefined;
-    const employeeSignedRaw = lapkin.employeeSignedAt as Date | null | undefined;
+    const managerSignedRaw = enriched.managerSignedAt as Date | null | undefined;
+    const employeeSignedRaw = enriched.employeeSignedAt as Date | null | undefined;
 
     return {
-      ...lapkin,
-      reportDate: String(lapkin.reportDate),
+      ...enriched,
+      reportDate: String(enriched.reportDate),
       employeeSignedAt: employeeSignedRaw ? new Date(employeeSignedRaw).toISOString() : null,
       isSignedByEmployee: employeeSignedRaw != null,
       managerSignedAt: managerSignedRaw ? new Date(managerSignedRaw).toISOString() : null,
@@ -403,13 +462,13 @@ export class LapkinService {
       .where(eq(lapkins.id, lapkinId));
 
     const updated = await this.buildLapkinResponse(lapkinId);
-    this.gateway.notifyManagerLapkinEmployeeSigned(updated);
+    this.gateway.notifySupervisorLapkinEmployeeSigned(updated.managerId, updated);
     return updated;
   }
 
   async signLapkinByManager(lapkinId: string, manager: RequestUser): Promise<LapkinResponseDto> {
     const lapkin = await this.buildLapkinResponse(lapkinId);
-    await this.assertManagerOwnsDirectReport(lapkin.employeeId, manager.id);
+    await this.assertCanEvaluateAsSupervisor(lapkin, manager);
 
     if (lapkin.status !== 'locked') {
       throw new BadRequestException('LAPKIN must be locked before sign-off');
@@ -525,9 +584,52 @@ export class LapkinService {
     const [report] = await this.db
       .select({ id: users.id })
       .from(users)
-      .where(and(eq(users.id, employeeId), eq(users.managerId, managerId)))
+      .where(
+        and(
+          eq(users.id, employeeId),
+          eq(users.managerId, managerId),
+          eq(users.role, 'pegawai'),
+        ),
+      )
       .limit(1);
     if (!report) throw new ForbiddenException('This employee is not your direct report');
+  }
+
+  private async assertCanEvaluateAsSupervisor(lapkin: LapkinResponseDto, actor: RequestUser): Promise<void> {
+    if (actor.role === 'manager') {
+      await this.assertManagerOwnsDirectReport(lapkin.employeeId, actor.id);
+      return;
+    }
+    if (actor.role === 'direktur') {
+      await this.assertDirekturAppraisesManagerLapkin(lapkin.employeeId, actor.id);
+      return;
+    }
+    throw new ForbiddenException('You cannot evaluate this LAPKIN');
+  }
+
+  private async assertDirekturAppraisesManagerLapkin(employeeId: string, direkturId: string): Promise<void> {
+    const [owner] = await this.db
+      .select({ role: users.role, managerId: users.managerId })
+      .from(users)
+      .where(eq(users.id, employeeId))
+      .limit(1);
+    if (!owner) throw new NotFoundException('LAPKIN owner not found');
+    if (owner.role !== 'manager') {
+      throw new ForbiddenException('Directors may only evaluate LAPKIN owned by a manager');
+    }
+    if (owner.managerId != null && owner.managerId !== direkturId) {
+      throw new ForbiddenException('This manager is not your direct report');
+    }
+  }
+
+  private async isEmployeeVisibleToDirektur(employeeId: string, direkturId: string): Promise<boolean> {
+    void direkturId;
+    const [row] = await this.db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.id, employeeId), inArray(users.role, ['manager', 'pegawai'])))
+      .limit(1);
+    return !!row;
   }
 
   private assertIsEmployeeOwner(lapkin: LapkinResponseDto, user: RequestUser): void {
@@ -544,10 +646,18 @@ export class LapkinService {
       throw new ForbiddenException('Access denied');
     }
     if (user.role === 'manager') {
+      if (lapkin.employeeId === user.id) return;
       if (lapkin.status === 'draft') {
-        throw new ForbiddenException('Managers cannot view draft LAPKINs');
+        throw new ForbiddenException('Managers cannot view draft LAPKINs from their team');
       }
       await this.assertManagerOwnsDirectReport(lapkin.employeeId, user.id);
+    }
+    if (user.role === 'direktur') {
+      if (lapkin.status === 'draft') {
+        throw new ForbiddenException('Directors cannot view draft LAPKINs');
+      }
+      const ok = await this.isEmployeeVisibleToDirektur(lapkin.employeeId, user.id);
+      if (!ok) throw new ForbiddenException('Access denied');
     }
   }
 }

@@ -27,7 +27,7 @@ const StatCard = ({ label, value, icon, color }: StatCardProps) => (
   </Card>
 );
 
-export const PegawaiDashboard = () => {
+export const EmplyeeDashboard = () => {
   const { user } = useAuthStore();
   const { lapkins, fetchAll, isLoading } = useLapkinStore();
   const navigate = useNavigate();

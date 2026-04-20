@@ -17,6 +17,7 @@ interface UserFormModalProps {
 const roleOptions = [
   { value: 'pegawai', label: 'Pegawai' },
   { value: 'manager', label: 'Manajer' },
+  { value: 'direktur', label: 'Direktur (satu akun)' },
   { value: 'admin', label: 'Administrator' },
 ];
 
@@ -44,7 +45,9 @@ export const UserFormModal = ({ isOpen, onClose, onSubmit, editingUser, isLoadin
   }, [editingUser, isOpen]);
 
   useEffect(() => {
-    if (isOpen) usersService.getManagers().then(setManagers).catch(() => {});
+    if (isOpen) {
+      usersService.getManagers().then(setManagers).catch(() => { });
+    }
   }, [isOpen]);
 
   const setField = <K extends keyof FormState>(key: K, value: FormState[K]) =>
@@ -58,7 +61,7 @@ export const UserFormModal = ({ isOpen, onClose, onSubmit, editingUser, isLoadin
       password: form.password,
       role: form.role,
       jobTitle: form.jobTitle,
-      ...(form.managerId && { managerId: form.managerId }),
+      ...(form.role === 'pegawai' && form.managerId && { managerId: form.managerId }),
     };
     await onSubmit(payload);
   };
@@ -98,7 +101,7 @@ export const UserFormModal = ({ isOpen, onClose, onSubmit, editingUser, isLoadin
           />
           {form.role === 'pegawai' && (
             <Select
-              label="Manajer (atasan langsung)"
+              label="Manajer"
               value={form.managerId}
               onChange={(e) => setField('managerId', e.target.value)}
               options={managerOptions}
@@ -106,6 +109,16 @@ export const UserFormModal = ({ isOpen, onClose, onSubmit, editingUser, isLoadin
             />
           )}
         </div>
+        {form.role === 'manager' && (
+          <p className="text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+            Atasan langsung manajer otomatis ditetapkan ke akun Direktur di sistem.
+          </p>
+        )}
+        {form.role === 'direktur' && (
+          <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+            Hanya satu akun Direktur yang boleh ada. Atasan langsung biasanya dikosongkan untuk puncak organisasi.
+          </p>
+        )}
 
         <div className="flex justify-end gap-3 pt-2">
           <Button variant="secondary" onClick={onClose} disabled={isLoading}>Batal</Button>

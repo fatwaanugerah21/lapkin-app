@@ -21,8 +21,16 @@ const pegawaiNav: NavItem[] = [
 
 const managerNav: NavItem[] = [
   { to: '/manager', label: 'Dasbor', icon: <LayoutDashboard className="w-5 h-5" /> },
-  { to: '/manager/lapkin', label: 'LAPKIN Bawahan', icon: <FileText className="w-5 h-5" /> },
+  { to: '/manager/lapkin/saya', label: 'LAPKIN Saya', icon: <FileText className="w-5 h-5" /> },
+  { to: '/manager/lapkin', label: 'LAPKIN Bawahan', icon: <Users className="w-5 h-5" /> },
   { to: '/manager/account', label: 'Akun Saya', icon: <UserCircle className="w-5 h-5" /> },
+];
+
+const direkturNav: NavItem[] = [
+  { to: '/direktur', label: 'Dasbor', icon: <LayoutDashboard className="w-5 h-5" /> },
+  { to: '/direktur/lapkin', label: 'LAPKIN Manajer', icon: <FileText className="w-5 h-5" /> },
+  { to: '/direktur/lapkin/pegawai', label: 'LAPKIN Pegawai', icon: <Users className="w-5 h-5" /> },
+  { to: '/direktur/account', label: 'Akun Saya', icon: <UserCircle className="w-5 h-5" /> },
 ];
 
 const adminNav: NavItem[] = [
@@ -34,12 +42,14 @@ const adminNav: NavItem[] = [
 const navByRole: Record<string, NavItem[]> = {
   pegawai: pegawaiNav,
   manager: managerNav,
+  direktur: direkturNav,
   admin: adminNav,
 };
 
 const roleUiLabel: Record<string, string> = {
   pegawai: 'Pegawai',
   manager: 'Manajer',
+  direktur: 'Direktur',
   admin: 'Administrator',
 };
 

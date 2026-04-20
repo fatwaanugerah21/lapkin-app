@@ -26,46 +26,46 @@ export class LapkinController {
   }
 
   @Post()
-  @Roles('pegawai')
+  @Roles('pegawai', 'manager')
   create(@Body() dto: CreateLapkinDto, @CurrentUser() user: RequestUser) {
     return this.lapkinService.create(dto, user.id);
   }
 
   @Delete(':id')
-  @Roles('pegawai')
+  @Roles('pegawai', 'manager')
   @HttpCode(204)
   deleteLapkin(@Param('id') id: string, @CurrentUser() user: RequestUser) {
     return this.lapkinService.deleteLapkin(id, user);
   }
 
   @Patch(':id/lock')
-  @Roles('pegawai')
+  @Roles('pegawai', 'manager')
   lock(@Param('id') id: string, @CurrentUser() user: RequestUser) {
     return this.lapkinService.lock(id, user);
   }
 
   @Patch(':id/unlock')
-  @Roles('pegawai')
+  @Roles('pegawai', 'manager')
   unlock(@Param('id') id: string, @CurrentUser() user: RequestUser) {
     return this.lapkinService.unlock(id, user);
   }
 
   @Patch(':id/sign-by-manager')
-  @Roles('manager')
+  @Roles('manager', 'direktur')
   @HttpCode(200)
   signByManager(@Param('id') id: string, @CurrentUser() user: RequestUser) {
     return this.lapkinService.signLapkinByManager(id, user);
   }
 
   @Patch(':id/sign-by-employee')
-  @Roles('pegawai')
+  @Roles('pegawai', 'manager')
   @HttpCode(200)
   signByEmployee(@Param('id') id: string, @CurrentUser() user: RequestUser) {
     return this.lapkinService.signLapkinByEmployee(id, user);
   }
 
   @Post(':id/rows')
-  @Roles('pegawai')
+  @Roles('pegawai', 'manager')
   addRow(
     @Param('id') id: string,
     @Body() dto: CreateLapkinRowDto,
@@ -75,7 +75,7 @@ export class LapkinController {
   }
 
   @Patch(':id/rows/:rowId')
-  @Roles('pegawai')
+  @Roles('pegawai', 'manager')
   updateRow(
     @Param('id') id: string,
     @Param('rowId') rowId: string,
@@ -86,7 +86,7 @@ export class LapkinController {
   }
 
   @Delete(':id/rows/:rowId')
-  @Roles('pegawai')
+  @Roles('pegawai', 'manager')
   @HttpCode(204)
   deleteRow(
     @Param('id') id: string,
@@ -97,7 +97,7 @@ export class LapkinController {
   }
 
   @Patch(':id/rows/:rowId/scores')
-  @Roles('manager')
+  @Roles('manager', 'direktur')
   managerUpdateRowScores(
     @Param('id') id: string,
     @Param('rowId') rowId: string,
@@ -108,7 +108,7 @@ export class LapkinController {
   }
 
   @Patch(':id/rows/:rowId/evaluate')
-  @Roles('manager')
+  @Roles('manager', 'direktur')
   evaluateRow(
     @Param('id') id: string,
     @Param('rowId') rowId: string,
