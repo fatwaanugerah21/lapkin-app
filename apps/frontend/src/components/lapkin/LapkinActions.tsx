@@ -28,11 +28,11 @@ export const LapkinActions = ({ lapkin }: LapkinActionsProps) => {
 
   const handleConfirm = async () => {
     if (confirmAction === 'lock') {
-      await run(() => lockLapkin(lapkin.id), 'LAPKIN berhasil dikunci');
+      await run(() => lockLapkin(lapkin.id), { successToast: 'LAPKIN berhasil dikunci' });
     } else if (confirmAction === 'unlock') {
-      await run(() => unlockLapkin(lapkin.id), 'LAPKIN berhasil dibuka');
+      await run(() => unlockLapkin(lapkin.id), { successToast: 'LAPKIN berhasil dibuka' });
     } else if (confirmAction === 'delete') {
-      const result = await run(() => deleteLapkin(lapkin.id), 'LAPKIN berhasil dihapus');
+      const result = await run(() => deleteLapkin(lapkin.id), { successToast: 'LAPKIN berhasil dihapus' });
       if (result !== null) {
         navigate(user.role === 'manager' ? '/manager/lapkin/saya' : '/pegawai/lapkin');
       }

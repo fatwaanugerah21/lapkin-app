@@ -24,7 +24,7 @@ export const LoginPage = () => {
     e.preventDefault();
     const user = await run(
       () => login(username, password).then(() => useAuthStore.getState().user),
-      'Berhasil masuk',
+      { successToast: 'Berhasil masuk' },
     );
     if (user) navigate(roleRedirectPath[user.role] ?? '/');
   };

@@ -59,7 +59,7 @@ export const Sidebar = () => {
 
   const navItems = navByRole[user?.role ?? ''] ?? [];
 
-  const handleLogout = () => run(logout, 'Berhasil keluar');
+  const handleLogout = () => run(logout, { successToast: 'Berhasil keluar' });
 
   return (
     <aside className="w-64 h-full min-h-0 shrink-0 bg-gray-900 flex flex-col overflow-hidden print:hidden">

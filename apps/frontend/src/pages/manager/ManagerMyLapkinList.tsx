@@ -32,7 +32,7 @@ export const ManagerMyLapkinList = () => {
 
   const handleCreate = async () => {
     if (!reportDate) return;
-    const lapkin = await run(() => createLapkin(reportDate), 'LAPKIN berhasil dibuat');
+    const lapkin = await run(() => createLapkin(reportDate), { successToast: 'LAPKIN berhasil dibuat' });
     if (lapkin) {
       setShowCreateModal(false);
       navigate(`/manager/lapkin/${(lapkin as Lapkin).id}`, {

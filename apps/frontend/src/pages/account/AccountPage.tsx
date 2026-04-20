@@ -48,8 +48,7 @@ export const AccountPage = () => {
     run(async () => {
       const dataUrl = padRef.current?.toDataURL() ?? null;
       await authService.updateMySignature({ signatureDataUrl: dataUrl });
-      toast.success('Tanda tangan berhasil disimpan');
-    }, 'Gagal menyimpan tanda tangan');
+    }, { successToast: 'Tanda tangan berhasil disimpan' });
   };
 
   const handleClearPad = () => {
@@ -60,8 +59,7 @@ export const AccountPage = () => {
     run(async () => {
       padRef.current?.clear();
       await authService.updateMySignature({ signatureDataUrl: null });
-      toast.success('Tanda tangan dihapus');
-    }, 'Gagal menghapus tanda tangan');
+    }, { successToast: 'Tanda tangan dihapus' });
   };
 
   if (!user) return null;

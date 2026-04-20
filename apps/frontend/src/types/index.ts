@@ -60,6 +60,11 @@ export interface Lapkin {
   managerName: string | null;
   managerNip: string | null;
   managerJobTitle: string | null;
+  /** Pegawai LAPKIN: direktur unit (from backend) for "Mengetahui" block. */
+  directorName: string | null;
+  directorNip: string | null;
+  /** Paraf direktur dari profil (PNG data URL). */
+  directorSignatureUrl: string | null;
   /** PNG data URL from employee profile. */
   employeeSignatureUrl: string | null;
   /** Set when the employee confirms Sign this LAPKIN (while locked). */

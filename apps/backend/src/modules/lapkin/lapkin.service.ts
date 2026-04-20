@@ -403,6 +403,26 @@ export class LapkinService {
       }
     }
 
+    let directorName: string | null = null;
+    let directorNip: string | null = null;
+    let directorSignatureUrl: string | null = null;
+    if (enriched.employeeRole === 'pegawai') {
+      const [dirInfo] = await this.db
+        .select({
+          name: users.name,
+          nip: users.nip,
+          signatureDataUrl: users.signatureDataUrl,
+        })
+        .from(users)
+        .where(eq(users.role, 'direktur'))
+        .limit(1);
+      if (dirInfo) {
+        directorName = dirInfo.name;
+        directorNip = dirInfo.nip;
+        directorSignatureUrl = dirInfo.signatureDataUrl;
+      }
+    }
+
     const rowsRaw = await this.db
       .select()
       .from(lapkinRows)
@@ -433,6 +453,9 @@ export class LapkinService {
 
     return {
       ...enriched,
+      directorName,
+      directorNip,
+      directorSignatureUrl,
       reportDate: String(enriched.reportDate),
       employeeSignedAt: employeeSignedRaw ? new Date(employeeSignedRaw).toISOString() : null,
       isSignedByEmployee: employeeSignedRaw != null,

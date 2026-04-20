@@ -33,7 +33,7 @@ export const AdminUsersPage = () => {
       await usersService.create(payload);
       await loadUsers();
       setShowCreateModal(false);
-    }, 'Pengguna berhasil ditambahkan');
+    }, { successToast: 'Pengguna berhasil ditambahkan' });
   };
 
   const handleUpdate = async (payload: CreateUserPayload) => {
@@ -46,7 +46,7 @@ export const AdminUsersPage = () => {
       await usersService.update(editingUser.id, updatePayload);
       await loadUsers();
       setEditingUser(null);
-    }, 'Pengguna berhasil diperbarui');
+    }, { successToast: 'Pengguna berhasil diperbarui' });
   };
 
   const handleDelete = async () => {
@@ -55,7 +55,7 @@ export const AdminUsersPage = () => {
       await usersService.remove(deletingUser.id);
       await loadUsers();
       setDeletingUser(null);
-    }, 'Pengguna berhasil dihapus');
+    }, { successToast: 'Pengguna berhasil dihapus' });
   };
 
   return (

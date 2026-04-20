@@ -66,6 +66,11 @@ export interface LapkinResponseDto {
   managerName: string | null;
   managerNip: string | null;
   managerJobTitle: string | null;
+  /** For pegawai LAPKIN: unit direktur (first user with role direktur) for "Mengetahui" footer. */
+  directorName: string | null;
+  directorNip: string | null;
+  /** Direktur profile signature image (PNG data URL), for "Mengetahui" block on pegawai LAPKIN. */
+  directorSignatureUrl: string | null;
   /** PNG data URL from employee profile, for footer. */
   employeeSignatureUrl: string | null;
   /** PNG data URL from manager profile, for footer. */

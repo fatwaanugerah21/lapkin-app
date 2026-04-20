@@ -113,11 +113,12 @@ function ManagerSignatureZone({
   const dashedBoxClass =
     'flex min-h-[5.5rem] w-full max-w-[14rem] mx-auto flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-3 py-2 text-center text-xs text-gray-600 transition-colors';
 
+  const unsignedEmptySpace = (
+    <div className="min-h-[5.5rem] w-full max-w-[14rem] mx-auto" aria-hidden />
+  );
+
   const handleSignLapkin = () =>
-    run(async () => {
-      await signLapkinByManager(lapkin.id);
-      toast.success('LAPKIN berhasil ditandatangani');
-    }, 'Gagal menandatangani LAPKIN');
+    run(() => signLapkinByManager(lapkin.id), { successToast: 'LAPKIN berhasil ditandatangani' });
 
   if (lapkin.isSignedByManager === true) {
     return lapkin.managerSignatureUrl ? (
@@ -133,11 +134,7 @@ function ManagerSignatureZone({
 
   if (lapkin.managerSignatureUrl) {
     if (!isLineAppraiser) {
-      return (
-        <div className={`${dashedBoxClass} border-gray-200 bg-white`}>
-          <span className="text-gray-500">Menunggu paraf penilai</span>
-        </div>
-      );
+      return unsignedEmptySpace;
     }
     const canSignThisLapkin =
       lapkin.status === 'locked' && allEvaluableRowsAcknowledgedForSign(lapkin);
@@ -172,12 +169,7 @@ function ManagerSignatureZone({
     );
   }
 
-  return (
-    <div className={dashedBoxClass}>
-      <span className="font-medium text-gray-800">Belum ada tanda tangan</span>
-      <span className="mt-1.5 text-gray-500">Penilai belum menambahkan tanda tangan</span>
-    </div>
-  );
+  return unsignedEmptySpace;
 }
 
 function EmployeeSignatureZone({
@@ -195,11 +187,12 @@ function EmployeeSignatureZone({
   const dashedBoxClass =
     'flex min-h-[5.5rem] w-full max-w-[14rem] mx-auto flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-3 py-2 text-center text-xs text-gray-600 transition-colors';
 
+  const unsignedEmptySpace = (
+    <div className="min-h-[5.5rem] w-full max-w-[14rem] mx-auto" aria-hidden />
+  );
+
   const handleSignLapkin = () =>
-    run(async () => {
-      await signLapkinByEmployee(lapkin.id);
-      toast.success('LAPKIN berhasil ditandatangani');
-    }, 'Gagal menandatangani LAPKIN');
+    run(() => signLapkinByEmployee(lapkin.id), { successToast: 'LAPKIN berhasil ditandatangani' });
 
   if (lapkin.isSignedByEmployee === true) {
     return lapkin.employeeSignatureUrl ? (
@@ -215,11 +208,7 @@ function EmployeeSignatureZone({
 
   if (lapkin.employeeSignatureUrl) {
     if (!isEmployeeForThisLapkin) {
-      return (
-        <div className={`${dashedBoxClass} border-gray-200 bg-white`}>
-          <span className="text-gray-500">Menunggu paraf pembuat laporan</span>
-        </div>
-      );
+      return unsignedEmptySpace;
     }
     const canSignThisLapkin = lapkin.status === 'locked' || lapkin.status === 'evaluated';
     return (
@@ -253,12 +242,48 @@ function EmployeeSignatureZone({
     );
   }
 
-  return (
-    <div className={dashedBoxClass}>
-      <span className="font-medium text-gray-800">Belum ada tanda tangan</span>
-      <span className="mt-1.5 text-gray-500">Pembuat laporan belum menambahkan tanda tangan</span>
-    </div>
+  return unsignedEmptySpace;
+}
+
+function DirekturSignatureZone({
+  lapkin,
+  accountHref,
+  isDirectorUser,
+}: {
+  lapkin: Lapkin;
+  accountHref: string;
+  isDirectorUser: boolean;
+}) {
+  const dashedBoxClass =
+    'flex min-h-[5.5rem] w-full max-w-[14rem] mx-auto flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-3 py-2 text-center text-xs text-gray-600 transition-colors';
+
+  const unsignedEmptySpace = (
+    <div className="min-h-[5.5rem] w-full max-w-[14rem] mx-auto" aria-hidden />
   );
+
+  if (lapkin.directorSignatureUrl) {
+    return (
+      <img
+        src={lapkin.directorSignatureUrl}
+        alt=""
+        className="max-h-20 max-w-[12rem] object-contain mx-auto"
+      />
+    );
+  }
+
+  if (isDirectorUser) {
+    return (
+      <Link
+        to={accountHref}
+        className={`${dashedBoxClass} hover:border-primary-400 hover:bg-primary-50/40 cursor-pointer`}
+      >
+        <span className="font-medium text-gray-800">Belum ada tanda tangan</span>
+        <span className="mt-1.5 font-medium text-primary-600">Tambah tanda tangan di Akun</span>
+      </Link>
+    );
+  }
+
+  return unsignedEmptySpace;
 }
 
 function LapkinSignatureFooter({ lapkin }: { lapkin: Lapkin }) {
@@ -275,35 +300,56 @@ function LapkinSignatureFooter({ lapkin }: { lapkin: Lapkin }) {
     user?.id === lapkin.managerId &&
     (user?.role === 'manager' || user?.role === 'direktur');
   const isEmployeeForThisLapkin = user?.id === lapkin.employeeId;
+  const isDirectorUser = user?.role === 'direktur';
+
+  const showMengetahui = lapkin.employeeRole === 'pegawai';
 
   return (
-    <div className="lapkin-print-signature-zone px-4 py-4 border-t border-gray-200 grid grid-cols-2 gap-6 text-xs sm:text-sm">
-      <div className="text-center">
-        <p className="font-medium text-gray-700 mb-1.5">PEJABAT PENILAI,</p>
-        <div className="min-h-[4.5rem] flex flex-col items-center justify-center gap-2 mb-2">
-          <ManagerSignatureZone
-            lapkin={lapkin}
-            isLineAppraiser={isLineAppraiser}
-            accountHref={accountHref}
-          />
+    <div className="lapkin-print-signature-zone border-t border-gray-200 px-4 py-4 text-xs sm:text-sm">
+      <div className="grid grid-cols-2 gap-6">
+        <div className="text-center">
+          <p className="font-medium text-gray-700 mb-1.5">PEJABAT PENILAI,</p>
+          <div className="min-h-[4.5rem] flex flex-col items-center justify-center gap-2 mb-2">
+            <ManagerSignatureZone
+              lapkin={lapkin}
+              isLineAppraiser={isLineAppraiser}
+              accountHref={accountHref}
+            />
+          </div>
+          <p className="font-semibold text-gray-900">{lapkin.managerName ?? '_______________'}</p>
+          {lapkin.managerName != null && (
+            <p className="text-gray-500 text-xs mt-0.5">NIP. {lapkin.managerNip ?? '—'}</p>
+          )}
         </div>
-        <p className="font-semibold text-gray-900">{lapkin.managerName ?? '_______________'}</p>
-        {lapkin.managerName != null && (
-          <p className="text-gray-500 text-xs mt-0.5">NIP. {lapkin.managerNip ?? '—'}</p>
-        )}
-      </div>
-      <div className="text-center">
-        <p className="font-medium text-gray-700 mb-1.5">YANG MEMBUAT LAPORAN,</p>
-        <div className="min-h-[4.5rem] flex flex-col items-center justify-center gap-2 mb-2">
-          <EmployeeSignatureZone
-            lapkin={lapkin}
-            isEmployeeForThisLapkin={isEmployeeForThisLapkin}
-            accountHref={accountHref}
-          />
+        <div className="text-center">
+          <p className="font-medium text-gray-700 mb-1.5">YANG MEMBUAT LAPORAN,</p>
+          <div className="min-h-[4.5rem] flex flex-col items-center justify-center gap-2 mb-2">
+            <EmployeeSignatureZone
+              lapkin={lapkin}
+              isEmployeeForThisLapkin={isEmployeeForThisLapkin}
+              accountHref={accountHref}
+            />
+          </div>
+          <p className="font-semibold text-gray-900">{lapkin.employeeName}</p>
+          <p className="text-gray-500 text-xs mt-0.5">NIP. {lapkin.employeeNip}</p>
         </div>
-        <p className="font-semibold text-gray-900">{lapkin.employeeName}</p>
-        <p className="text-gray-500 text-xs mt-0.5">NIP. {lapkin.employeeNip}</p>
       </div>
+      {showMengetahui && (
+        <div className="mt-6 pt-4 border-t border-gray-100 text-center">
+          <p className="font-medium text-gray-700 mb-1.5">Mengetahui</p>
+          <div className="min-h-[4.5rem] flex flex-col items-center justify-center gap-2 mb-2">
+            <DirekturSignatureZone
+              lapkin={lapkin}
+              accountHref={accountHref}
+              isDirectorUser={isDirectorUser}
+            />
+          </div>
+          <p className="font-semibold text-gray-900">
+            {lapkin.directorName?.trim() || '_______________'}
+          </p>
+          <p className="text-gray-500 text-xs mt-0.5">NIP. {lapkin.directorNip ?? '—'}</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -469,23 +515,23 @@ export const LapkinTable = ({ lapkin }: LapkinTableProps) => {
   };
 
   const handleAddRow = async (payload: CreateLapkinRowPayload) => {
-    await run(() => addRow(lapkin.id, payload), 'Baris berhasil ditambahkan');
+    await run(() => addRow(lapkin.id, payload), { successToast: 'Baris berhasil ditambahkan' });
   };
 
   const handleUpdateRow = async (payload: CreateLapkinRowPayload) => {
     if (!editingRow) return;
-    await run(() => updateRow(lapkin.id, editingRow.id, payload), 'Baris berhasil diperbarui');
+    await run(() => updateRow(lapkin.id, editingRow.id, payload), { successToast: 'Baris berhasil diperbarui' });
   };
 
   const handleDeleteRow = async () => {
     if (!deletingRow) return;
-    await run(() => deleteRow(lapkin.id, deletingRow.id), 'Baris berhasil dihapus');
+    await run(() => deleteRow(lapkin.id, deletingRow.id), { successToast: 'Baris berhasil dihapus' });
     setDeletingRow(null);
   };
 
   const handleEvaluateRow = async () => {
     if (!evaluatingRow) return;
-    await run(() => evaluateRow(lapkin.id, evaluatingRow.id), 'Baris ditandai sudah ditinjau');
+    await run(() => evaluateRow(lapkin.id, evaluatingRow.id), { successToast: 'Baris ditandai sudah ditinjau' });
   };
 
   return (

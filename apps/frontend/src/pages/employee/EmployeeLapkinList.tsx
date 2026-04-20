@@ -25,7 +25,7 @@ export const EmployeeLapkinList = () => {
 
   const handleCreate = async () => {
     if (!reportDate) return;
-    const lapkin = await run(() => createLapkin(reportDate), 'LAPKIN berhasil dibuat');
+    const lapkin = await run(() => createLapkin(reportDate), { successToast: 'LAPKIN berhasil dibuat' });
     if (lapkin) {
       setShowCreateModal(false);
       navigate(`/pegawai/lapkin/${(lapkin as Lapkin).id}`);
