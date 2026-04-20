@@ -6,9 +6,10 @@ import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from '../../common/types';
 import { LapkinResponseDto } from '../lapkin/lapkin.dto';
+import { parseFrontendCorsOrigins } from '../../common/parse-frontend-cors-origins';
 
 @WebSocketGateway({
-  cors: { origin: process.env.FRONTEND_URL || 'http://localhost:5173', credentials: true },
+  cors: { origin: parseFrontendCorsOrigins(), credentials: true },
 })
 export class LapkinGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()

@@ -7,6 +7,7 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 import fastifyCookie from '@fastify/cookie';
 import fastifyCors from '@fastify/cors';
 import { AppModule } from './app.module';
+import { parseFrontendCorsOrigins } from './common/parse-frontend-cors-origins';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -19,7 +20,7 @@ async function bootstrap() {
   });
 
   await app.register(fastifyCors, {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: parseFrontendCorsOrigins(),
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   });

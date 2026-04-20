@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
+import { FtsDigihouseCredit } from './FtsDigihouseCredit';
 import { useSocket } from '../../hooks/useSocket';
 
 export const AppLayout = () => {
@@ -8,9 +9,14 @@ export const AppLayout = () => {
   return (
     <div className="flex h-screen max-h-screen overflow-hidden bg-gray-50">
       <Sidebar />
-      <main className="flex-1 min-h-0 overflow-y-auto">
-        <Outlet />
-      </main>
+      <div className="flex min-w-0 flex-1 flex-col min-h-0">
+        <main className="min-h-0 flex-1 overflow-y-auto">
+          <Outlet />
+        </main>
+        <footer className="shrink-0 border-t border-gray-200 bg-white/95 backdrop-blur-sm">
+          <FtsDigihouseCredit variant="footer" />
+        </footer>
+      </div>
     </div>
   );
 };

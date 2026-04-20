@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/auth.store';
 import { useAsyncAction } from '../../hooks/useAsyncAction';
+import { FtsDigihouseCredit } from './FtsDigihouseCredit';
 
 interface NavItem {
   to: string;
