@@ -149,8 +149,12 @@ export const RowFormModal = ({ isOpen, onClose, onSubmit, editingRow, isLoading 
 
   const handleSubmit = async () => {
     if (!isFormValid()) return;
-    await onSubmit(form);
-    onClose();
+    try {
+      await onSubmit(form);
+      onClose();
+    } catch {
+      /* modal stays open; caller may toast */
+    }
   };
 
   return (

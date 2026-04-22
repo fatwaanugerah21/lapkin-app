@@ -67,7 +67,7 @@ export const AccountPage = () => {
   const roleLabel = roleLabelId[user.role] ?? user.role;
 
   return (
-    <div className="p-6 max-w-xl mx-auto space-y-6">
+    <div className="p-4 max-w-xl mx-auto space-y-4">
       <Card>
         <CardHeader
           title="Akun saya"

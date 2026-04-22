@@ -202,22 +202,32 @@ export class LapkinService {
 
       const perf = item.performancePercent;
       const field = item.fieldDutyPercent;
-      if (perf == null || field == null) {
-        throw new BadRequestException('Hasil kinerja and tugas dinas luar are required for each work activity');
+      const notWorking = item.notWorkingPercent ?? 0;
+      const hasAnyInput =
+        perf != null || field != null || notWorking > 0;
+      if (!hasAnyInput) {
+        throw new BadRequestException(
+          'Isi salah satu: hasil kinerja (%), tugas dinas luar (%), atau centang tidak masuk kerja, untuk setiap kegiatan kerja',
+        );
       }
 
-      const notWorking = item.notWorkingPercent ?? 0;
-      const finalScore = (perf + field) / 2;
+      const finalScore = item.finalScore;
+      if (finalScore == null) {
+        throw new BadRequestException('Nilai akhir is required for each work activity');
+      }
+
+      const notesTrimmed = item.notes?.trim();
+      const notes = notesTrimmed ? notesTrimmed : null;
 
       return {
         taskDescription: ex.taskDescription,
         resultDescription: ex.resultDescription,
         isRest: false,
-        performancePercent: perf,
-        fieldDutyPercent: field,
+        performancePercent: perf ?? null,
+        fieldDutyPercent: field ?? null,
         notWorkingPercent: notWorking,
         finalScore,
-        notes: ex.notes?.trim() ? ex.notes.trim() : null,
+        notes,
       };
     });
 
@@ -244,13 +254,18 @@ export class LapkinService {
       const acts = rowDto.activities;
       for (const a of acts) {
         if (a.isRest) continue;
+        const nw = a.notWorkingPercent != null ? Number(a.notWorkingPercent) : 0;
+        const hasAny =
+          (a.performancePercent != null && String(a.performancePercent).trim() !== '')
+          || (a.fieldDutyPercent != null && String(a.fieldDutyPercent).trim() !== '')
+          || nw > 0;
         if (
-          a.performancePercent == null
-          || a.fieldDutyPercent == null
-          || a.notWorkingPercent == null
+          !hasAny
+          || a.finalScore == null
+          || String(a.finalScore).trim() === ''
         ) {
           throw new BadRequestException(
-            'Fill hasil kinerja, tugas dinas luar, and tidak masuk kerja for all work activities before reviewing',
+            'Fill at least one of hasil kinerja, tugas dinas luar, or tidak masuk kerja, and nilai akhir, for all work activities before reviewing',
           );
         }
       }
@@ -268,7 +283,6 @@ export class LapkinService {
   async deleteLapkin(lapkinId: string, user: RequestUser): Promise<void> {
     const lapkin = await this.buildLapkinResponse(lapkinId);
     this.assertIsEmployeeOwner(lapkin, user);
-    if (lapkin.status === 'evaluated') throw new BadRequestException('Cannot delete an evaluated LAPKIN');
     await this.db.delete(lapkins).where(eq(lapkins.id, lapkinId));
   }
 
@@ -502,8 +516,8 @@ export class LapkinService {
     if (!lapkin.managerSignatureUrl) {
       throw new BadRequestException('Add your signature under My account before signing this LAPKIN');
     }
-    if (!this.allEvaluableRowsAcknowledged(lapkin)) {
-      throw new BadRequestException('Acknowledge all work rows before signing this LAPKIN');
+    if (!this.allWorkActivitiesHaveFinalScore(lapkin)) {
+      throw new BadRequestException('Fill nilai akhir for all work activities before signing this LAPKIN');
     }
 
     await this.db
@@ -520,13 +534,12 @@ export class LapkinService {
     return updated;
   }
 
-  private allEvaluableRowsAcknowledged(lapkin: LapkinResponseDto): boolean {
-    const rowsNeedingAck = lapkin.rows.filter((r) => {
-      const acts = r.activities ?? [];
-      return acts.length > 0 && acts.some((a) => !a.isRest);
-    });
-    if (rowsNeedingAck.length === 0) return true;
-    return rowsNeedingAck.every((r) => r.managerAcknowledged);
+  private allWorkActivitiesHaveFinalScore(lapkin: LapkinResponseDto): boolean {
+    const workActs = lapkin.rows.flatMap((r) => (r.activities ?? []).filter((a) => !a.isRest));
+    if (workActs.length === 0) return true;
+    return workActs.every(
+      (a) => a.finalScore != null && String(a.finalScore).trim() !== '',
+    );
   }
 
   private mapRowToDto(

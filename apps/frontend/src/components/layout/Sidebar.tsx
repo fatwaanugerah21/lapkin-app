@@ -1,11 +1,16 @@
 import { NavLink } from 'react-router-dom';
 import { clsx } from 'clsx';
 import {
-  LayoutDashboard, FileText, Users, LogOut, ChevronRight, UserCircle,
+  LayoutDashboard,
+  FileText,
+  Users,
+  LogOut,
+  ChevronRight,
+  UserCircle,
+  X,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/auth.store';
 import { useAsyncAction } from '../../hooks/useAsyncAction';
-import { FtsDigihouseCredit } from './FtsDigihouseCredit';
 
 interface NavItem {
   to: string;
@@ -53,20 +58,48 @@ const roleUiLabel: Record<string, string> = {
   admin: 'Administrator',
 };
 
-export const Sidebar = () => {
+export interface SidebarProps {
+  /** When true, drawer is visible (mobile only; md+ ignores). */
+  mobileOpen?: boolean;
+  onCloseMobile?: () => void;
+}
+
+export const Sidebar = ({ mobileOpen = false, onCloseMobile }: SidebarProps = {}) => {
   const { user, logout } = useAuthStore();
   const { isLoading, run } = useAsyncAction();
 
   const navItems = navByRole[user?.role ?? ''] ?? [];
 
-  const handleLogout = () => run(logout, { successToast: 'Berhasil keluar' });
+  const handleLogout = () => {
+    closeMobile();
+    run(logout, { successToast: 'Berhasil keluar' });
+  };
+
+  const closeMobile = () => onCloseMobile?.();
 
   return (
-    <aside className="w-64 h-full min-h-0 shrink-0 bg-gray-900 flex flex-col overflow-hidden print:hidden">
+    <aside
+      id="app-sidebar-nav"
+      className={clsx(
+        'w-64 h-full min-h-0 shrink-0 bg-gray-900 flex flex-col overflow-hidden print:hidden',
+        'fixed inset-y-0 left-0 z-50 shadow-xl transition-transform duration-200 ease-out md:relative md:z-auto md:translate-x-0 md:shadow-none',
+        mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+      )}
+    >
       {/* Logo */}
-      <div className="shrink-0 px-6 py-5 border-b border-gray-700">
-        <h1 className="text-white font-bold text-xl tracking-tight">LAPKIN</h1>
-        <p className="text-gray-400 text-xs mt-0.5">Laporan Kinerja PNS</p>
+      <div className="shrink-0 px-6 py-5 border-b border-gray-700 flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h1 className="text-white font-bold text-xl tracking-tight">LAPKIN</h1>
+          <p className="text-gray-400 text-xs mt-0.5">Laporan Kinerja PNS</p>
+        </div>
+        <button
+          type="button"
+          onClick={closeMobile}
+          className="md:hidden shrink-0 rounded-lg p-2 text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+          aria-label="Tutup menu"
+        >
+          <X className="w-5 h-5" aria-hidden />
+        </button>
       </div>
 
       {/* User info */}
@@ -87,6 +120,7 @@ export const Sidebar = () => {
             key={item.to}
             to={item.to}
             end
+            onClick={closeMobile}
             className={({ isActive }) =>
               clsx(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group',

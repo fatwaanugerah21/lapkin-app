@@ -56,7 +56,7 @@ export const EmployeeLapkinList = () => {
           action={<Button onClick={() => setShowCreateModal(true)}>Buat LAPKIN Pertama</Button>}
         />
       ) : (
-        <div className="grid gap-3">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
           {lapkins.map((lapkin) => (
             <LapkinCard
               key={lapkin.id}

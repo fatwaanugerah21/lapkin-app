@@ -67,7 +67,7 @@ export const ManagerMyLapkinList = () => {
           }
         />
       ) : (
-        <div className="grid gap-3">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
           {myLapkins.map((lapkin) => (
             <LapkinCard
               key={lapkin.id}

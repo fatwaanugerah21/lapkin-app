@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useLapkinStore } from '../../stores/lapkin.store';
@@ -11,6 +11,12 @@ import { StatusBadge, SignedByManagerBadge } from '../../components/ui/Badge';
 import { PageSpinner } from '../../components/ui/Spinner';
 import { Card } from '../../components/ui/Card';
 import { WorkflowHint } from '../../components/layout/WorkflowHint';
+import {
+  lapkinFinalScoreFilledCount,
+  lapkinFinalScoreFilledCountFromDrafts,
+  lapkinWorkActivityCount,
+  type ScoreDraft,
+} from '../../components/lapkin/lapkinTableScoreUtils';
 
 type DetailLocationState = { directorListBackPath?: string; managerListBackPath?: string };
 
@@ -20,6 +26,9 @@ export const ManagerLapkinDetail = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const [managerScoreDrafts, setManagerScoreDrafts] = useState<Record<string, ScoreDraft[]> | null>(
+    null,
+  );
 
   const basePath = useMemo(
     () => (user?.role === 'direktur' ? '/direktur' : '/manager'),
@@ -43,12 +52,11 @@ export const ManagerLapkinDetail = () => {
 
   if (!activeLapkin || activeLapkin.id !== id) return <PageSpinner />;
 
-  const rowsForEvaluationProgress = activeLapkin.rows.filter((r) => {
-    const activities = r.activities ?? [];
-    return activities.length > 0 && activities.some((a) => a.isRest !== true);
-  });
-  const evaluatedCount = rowsForEvaluationProgress.filter((r) => r.managerAcknowledged).length;
-  const totalRows = rowsForEvaluationProgress.length;
+  const totalFinalScoreSlots = lapkinWorkActivityCount(activeLapkin);
+  const filledFinalScoreSlots =
+    managerScoreDrafts != null
+      ? lapkinFinalScoreFilledCountFromDrafts(activeLapkin, managerScoreDrafts)
+      : lapkinFinalScoreFilledCount(activeLapkin);
 
   const showSupervisorProgress =
     user?.role !== 'direktur' || activeLapkin.employeeRole === 'manager';
@@ -85,27 +93,32 @@ export const ManagerLapkinDetail = () => {
         )}
 
       {/* Evaluation progress */}
-      {showSupervisorProgress && activeLapkin.status === 'locked' && totalRows > 0 && (
+      {showSupervisorProgress && activeLapkin.status === 'locked' && totalFinalScoreSlots > 0 && (
         <Card padding={false} className="p-3 print:hidden">
           <div className="flex items-center justify-between mb-1.5">
             <p className="text-xs font-medium text-gray-700">Progres evaluasi</p>
-            <p className="text-xs text-gray-500 tabular-nums">{evaluatedCount} / {totalRows} baris</p>
+            <p className="text-xs text-gray-500 tabular-nums">
+              {filledFinalScoreSlots} / {totalFinalScoreSlots} nilai akhir
+            </p>
           </div>
           <div className="w-full bg-gray-100 rounded-full h-1.5">
             <div
               className="bg-green-500 h-1.5 rounded-full transition-all duration-500"
-              style={{ width: `${totalRows > 0 ? (evaluatedCount / totalRows) * 100 : 0}%` }}
+              style={{
+                width: `${totalFinalScoreSlots > 0 ? (filledFinalScoreSlots / totalFinalScoreSlots) * 100 : 0}%`,
+              }}
             />
           </div>
-          {evaluatedCount < totalRows && user?.role !== 'direktur' && (
+          {filledFinalScoreSlots < totalFinalScoreSlots && user?.role !== 'direktur' && (
             <p className="text-[11px] text-yellow-800 mt-1.5 leading-snug">
-              Klik ikon bintang pada baris setelah kolom persentase terisi, untuk menandai baris sudah ditinjau.
+              Progres mengikuti kolom nilai akhir yang sudah diisi. Penilaian disimpan ke server saat Anda
+              menandatangani LAPKIN.
             </p>
           )}
         </Card>
       )}
 
-        <LapkinTable lapkin={activeLapkin} />
+        <LapkinTable lapkin={activeLapkin} onManagerScoreDraftsChange={setManagerScoreDrafts} />
       </div>
     </div>
   );

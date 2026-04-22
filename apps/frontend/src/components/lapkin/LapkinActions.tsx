@@ -56,7 +56,10 @@ export const LapkinActions = ({ lapkin }: LapkinActionsProps) => {
     },
     delete: {
       title: 'Hapus LAPKIN',
-      message: 'LAPKIN ini akan dihapus permanen beserta semua barisnya. Tindakan ini tidak dapat dibatalkan.',
+      message:
+        lapkin.status === 'evaluated'
+          ? 'LAPKIN ini sudah selesai dievaluasi. Menghapusnya akan menghilangkan data secara permanen, termasuk evaluasi dan semua baris. Tindakan ini tidak dapat dibatalkan.'
+          : 'LAPKIN ini akan dihapus permanen beserta semua barisnya. Tindakan ini tidak dapat dibatalkan.',
       label: 'Hapus',
       variant: 'danger' as const,
     },
@@ -64,32 +67,23 @@ export const LapkinActions = ({ lapkin }: LapkinActionsProps) => {
 
   const active = confirmAction ? confirmConfig[confirmAction] : null;
   const hasRows = lapkin.rows.length > 0;
+  const canDeleteLapkin =
+    lapkin.status === 'draft' || lapkin.status === 'locked' || lapkin.status === 'evaluated';
 
   return (
     <>
       <div className="flex items-center gap-2">
         {lapkin.status === 'draft' && (
-          <>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setConfirmAction('lock')}
-              disabled={!hasRows}
-              isLoading={isLoading}
-            >
-              <Lock className="w-4 h-4" />
-              Kunci untuk Evaluasi
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={() => setConfirmAction('delete')}
-              disabled={isLoading}
-            >
-              <Trash2 className="w-4 h-4" />
-              Hapus
-            </Button>
-          </>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setConfirmAction('lock')}
+            disabled={!hasRows}
+            isLoading={isLoading}
+          >
+            <Lock className="w-4 h-4" />
+            Kunci untuk Evaluasi
+          </Button>
         )}
         {lapkin.status === 'locked' && (
           <Button
@@ -100,6 +94,17 @@ export const LapkinActions = ({ lapkin }: LapkinActionsProps) => {
           >
             <Unlock className="w-4 h-4" />
             Buka Kunci
+          </Button>
+        )}
+        {canDeleteLapkin && (
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => setConfirmAction('delete')}
+            disabled={isLoading}
+          >
+            <Trash2 className="w-4 h-4" />
+            Hapus
           </Button>
         )}
       </div>

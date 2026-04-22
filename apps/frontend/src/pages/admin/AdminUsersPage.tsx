@@ -59,7 +59,7 @@ export const AdminUsersPage = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4">
       <PageHeader
         title="Kelola Pengguna"
         subtitle="Tambah, ubah, dan hapus akun pengguna sistem"

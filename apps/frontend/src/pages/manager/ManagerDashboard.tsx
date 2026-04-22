@@ -19,10 +19,10 @@ interface StatCardProps {
 
 const StatCard = ({ label, value, icon, color, detail }: StatCardProps) => (
   <Card>
-    <div className="flex items-center gap-4">
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color}`}>{icon}</div>
-      <div>
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${color}`}>{icon}</div>
+      <div className="min-w-0">
+        <p className="text-xl font-bold text-gray-900 tabular-nums">{value}</p>
         <p className="text-sm text-gray-500">{label}</p>
         {detail && <p className="text-xs text-gray-500 mt-0.5">{detail}</p>}
       </div>
@@ -127,30 +127,30 @@ export const ManagerDashboard = () => {
               value={stats.total}
               detail={isDirector ? `Manajer: ${stats.managerTotal} • Pegawai: ${stats.pegawaiTotal}` : 'LAPKIN pegawai'}
               color="bg-blue-100"
-              icon={<FileText className="w-6 h-6 text-blue-600" />}
+              icon={<FileText className="w-5 h-5 text-blue-600" />}
             />
             <StatCard
               label="Menunggu Evaluasi"
               value={stats.locked}
               detail={isDirector ? 'LAPKIN manajer' : 'LAPKIN pegawai'}
               color="bg-yellow-100"
-              icon={<Users className="w-6 h-6 text-yellow-600" />}
+              icon={<Users className="w-5 h-5 text-yellow-600" />}
             />
             <StatCard
               label="Sudah Dievaluasi"
               value={stats.evaluated}
               detail={isDirector ? 'LAPKIN manajer' : 'LAPKIN pegawai'}
               color="bg-green-100"
-              icon={<CheckCircle className="w-6 h-6 text-green-600" />}
+              icon={<CheckCircle className="w-5 h-5 text-green-600" />}
             />
           </div>
 
           {pendingEvaluation.length > 0 && (
             <Card>
-              <h3 className="text-base font-semibold text-gray-900 mb-3">
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">
                 Menunggu Evaluasi ({pendingEvaluation.length})
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {pendingEvaluation.slice(0, 5).map((l) => (
                   <div
                     key={l.id}
@@ -163,7 +163,7 @@ export const ManagerDashboard = () => {
                         openPendingLapkin(l);
                       }
                     }}
-                    className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-100 cursor-pointer hover:bg-yellow-100 transition-colors"
+                    className="flex items-center justify-between p-2.5 rounded-md bg-yellow-50 border border-yellow-100 cursor-pointer hover:bg-yellow-100 transition-colors"
                   >
                     <div>
                       <p className="text-sm font-medium text-gray-900">{l.employeeName}</p>

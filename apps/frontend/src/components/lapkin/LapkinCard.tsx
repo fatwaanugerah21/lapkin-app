@@ -42,10 +42,10 @@ export const LapkinCard = ({ lapkin, onView, showPegawai = false }: LapkinCardPr
   const showNilaiAkhir = workActivityCount > 0;
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2 mb-2">
+    <Card className="flex h-full min-h-0 flex-col hover:shadow-md transition-shadow">
+      <div className="flex min-h-0 flex-1 flex-col gap-3">
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="flex flex-wrap items-center gap-1.5">
             <StatusBadge status={lapkin.status} />
             <SignedByManagerBadge isSigned={lapkin.isSignedByManager === true} />
             <SignedByEmployeeBadge isSigned={lapkin.isSignedByEmployee === true} />
@@ -53,10 +53,10 @@ export const LapkinCard = ({ lapkin, onView, showPegawai = false }: LapkinCardPr
           </div>
 
           {showNilaiAkhir && (
-            <div className="mb-2 rounded-lg border border-gray-100 bg-gray-50/80 px-2.5 py-2">
+            <div className="rounded-md border border-gray-100 bg-gray-50/80 px-2 py-1.5">
               <p className="text-xs font-medium text-gray-700">Nilai akhir (%)</p>
               {average != null ? (
-                <p className="text-sm mt-0.5">
+                <p className="text-sm mt-0.5 leading-snug">
                   <span className="font-semibold tabular-nums text-green-700">{average}%</span>
                   <span className="text-xs text-gray-500 ml-1.5">
                     rata-rata · {scoredCount}/{workActivityCount} kegiatan
@@ -68,25 +68,30 @@ export const LapkinCard = ({ lapkin, onView, showPegawai = false }: LapkinCardPr
             </div>
           )}
 
-          <div className="flex items-center gap-2 text-sm text-gray-700 font-medium mb-1">
+          <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
             <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
             {formatReportDate(lapkin.reportDate)}
           </div>
 
           {showPegawai && (
-            <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
               <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
               <span className="truncate">{lapkin.employeeName}</span>
             </div>
           )}
 
-          <div className="flex items-center gap-2 text-xs text-gray-400 mt-1">
-            <FileText className="w-3 h-3" />
-            {lapkin.employeeJobTitle}
+          <div className="flex items-center gap-2 text-xs text-gray-400">
+            <FileText className="w-3 h-3 flex-shrink-0" />
+            <span className="truncate">{lapkin.employeeJobTitle}</span>
           </div>
         </div>
 
-        <Button size="sm" variant="secondary" onClick={() => onView(lapkin)} className="ml-4 flex-shrink-0">
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={() => onView(lapkin)}
+          className="mt-auto w-full shrink-0 justify-center"
+        >
           Lihat
         </Button>
       </div>

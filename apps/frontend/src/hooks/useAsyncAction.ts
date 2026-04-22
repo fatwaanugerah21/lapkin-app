@@ -21,7 +21,9 @@ export const useAsyncAction = () => {
       } catch (err) {
         const message = axios.isAxiosError(err)
           ? err.response?.data?.message || 'Terjadi kesalahan'
-          : 'Terjadi kesalahan';
+          : err instanceof Error && err.message
+            ? err.message
+            : 'Terjadi kesalahan';
         toast.error(Array.isArray(message) ? message[0] : message);
         return null;
       } finally {

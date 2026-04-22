@@ -401,7 +401,7 @@ export const ManagerLapkinList = ({ directorScope }: ManagerLapkinListProps = {}
           }
         />
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {grouped.map((group) => {
             const isExpanded = !collapsedEmployeeIds.has(group.employeeId);
             const pendingEvaluationCount = group.lapkins.filter((lapkin) => lapkin.status === 'locked').length;
@@ -411,11 +411,11 @@ export const ManagerLapkinList = ({ directorScope }: ManagerLapkinListProps = {}
                 ? `${sampleLapkin.managerName} (NIP ${sampleLapkin.managerNip})`
                 : sampleLapkin?.managerName ?? '-';
             return (
-              <section key={group.employeeId} className="rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm">
+              <section key={group.employeeId} className="rounded-lg border border-gray-200 bg-white overflow-hidden shadow-sm">
                 <button
                   type="button"
                   onClick={() => toggleGroup(group.employeeId)}
-                  className="flex w-full items-start gap-2 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
+                  className="flex w-full items-start gap-2 px-3 py-2.5 text-left hover:bg-gray-50 transition-colors"
                   aria-expanded={isExpanded}
                 >
                   <ChevronDown
@@ -444,7 +444,7 @@ export const ManagerLapkinList = ({ directorScope }: ManagerLapkinListProps = {}
                   </span>
                 </button>
                 {isExpanded && (
-                  <div className="grid gap-3 px-4 pb-4 pt-0 border-t border-gray-100 bg-gray-50/50">
+                  <div className="grid grid-cols-1 gap-2 px-3 pb-3 pt-0 border-t border-gray-100 bg-gray-50/50 md:grid-cols-2 xl:grid-cols-3">
                     {group.lapkins.map((lapkin) => (
                       <LapkinCard
                         key={lapkin.id}
