@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 
 export type SearchableSelectOption = {
   value: string;
@@ -16,6 +16,7 @@ type SearchableSelectProps = {
   onChange: (value: string) => void;
   options: SearchableSelectOption[];
   className?: string;
+  clearable?: boolean;
 };
 
 export function SearchableSelect({
@@ -25,6 +26,7 @@ export function SearchableSelect({
   onChange,
   options,
   className,
+  clearable = false,
 }: SearchableSelectProps) {
   const inputId = useId();
   const listId = `${inputId}-listbox`;
@@ -82,6 +84,7 @@ export function SearchableSelect({
 
   const inputValue = open ? query : (selected?.label ?? '');
   const showMuted = !selected && !open;
+  const canClear = clearable && value !== '';
 
   return (
     <div ref={rootRef} className={clsx('relative flex flex-col gap-1.5', className)}>
@@ -102,7 +105,8 @@ export function SearchableSelect({
           autoComplete="off"
           placeholder={placeholder}
           className={clsx(
-            'w-full min-w-0 rounded-xl border bg-white py-2 pl-3 pr-9 text-sm shadow-sm transition-all duration-200',
+            'w-full h-10 min-w-0 rounded-xl border bg-white py-2 pl-3 pr-9 text-sm shadow-sm transition-all duration-200',
+            canClear && 'pr-16',
             'border-gray-200 hover:border-gray-300 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20',
             showMuted && 'text-gray-500 placeholder:text-gray-400',
           )}
@@ -168,6 +172,21 @@ export function SearchableSelect({
             aria-hidden
           />
         </button>
+        {canClear && (
+          <button
+            type="button"
+            aria-label="Clear selected value"
+            className="absolute right-8 top-1/2 -translate-y-1/2 rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              onChange('');
+              setQuery('');
+              setOpen(false);
+            }}
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
         {open && (
           <ul
             id={listId}

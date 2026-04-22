@@ -44,7 +44,20 @@ export const LapkinCard = ({ lapkin, onView, showPegawai = false }: LapkinCardPr
   return (
     <Card className="flex h-full min-h-0 flex-col hover:shadow-md transition-shadow">
       <div className="flex min-h-0 flex-1 flex-col gap-3">
+
         <div className="min-w-0 flex-1 space-y-2">
+          <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
+            <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            {formatReportDate(lapkin.reportDate)}
+          </div>
+
+          {showPegawai && (
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <span className="truncate">{lapkin.employeeName}</span>
+            </div>
+          )}
+
           <div className="flex flex-wrap items-center gap-1.5">
             <StatusBadge status={lapkin.status} />
             <SignedByManagerBadge isSigned={lapkin.isSignedByManager === true} />
@@ -68,20 +81,8 @@ export const LapkinCard = ({ lapkin, onView, showPegawai = false }: LapkinCardPr
             </div>
           )}
 
-          <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
-            <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
-            {formatReportDate(lapkin.reportDate)}
-          </div>
-
-          {showPegawai && (
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
-              <span className="truncate">{lapkin.employeeName}</span>
-            </div>
-          )}
-
           <div className="flex items-center gap-2 text-xs text-gray-400">
-            <FileText className="w-3 h-3 flex-shrink-0" />
+            <strong>Penilai: </strong>
             <span className="truncate">{lapkin.employeeJobTitle}</span>
           </div>
         </div>

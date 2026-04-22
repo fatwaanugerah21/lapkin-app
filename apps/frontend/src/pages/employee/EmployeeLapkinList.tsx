@@ -10,6 +10,8 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { Input } from '../../components/ui/Input';
+import { DatePicker } from '../../components/ui/DatePicker';
+import { SelectMenu } from '../../components/ui/SelectMenu';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Spinner } from '../../components/ui/Spinner';
 import { useAsyncAction } from '../../hooks/useAsyncAction';
@@ -36,9 +38,6 @@ const MONTH_OPTIONS = [
   { value: '11', label: 'November' },
   { value: '12', label: 'Desember' },
 ] as const;
-
-const filterSelectClass =
-  'w-full min-w-0 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 shadow-sm transition-all duration-200 hover:border-gray-300 hover:shadow focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:shadow-md';
 
 function monthKeyFromReportDate(reportDate: string): string {
   return reportDate.slice(0, 7);
@@ -185,6 +184,8 @@ export const EmployeeLapkinList = () => {
 
   const handleCreate = async () => {
     if (!reportDate) return;
+    const today = new Date().toISOString().split('T')[0];
+    if (reportDate > today) return;
     const lapkin = await run(() => createLapkin(reportDate), { successToast: 'LAPKIN berhasil dibuat' });
     if (lapkin) {
       setShowCreateModal(false);
@@ -233,38 +234,29 @@ export const EmployeeLapkinList = () => {
           >
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-12">
               <div className="sm:col-span-4">
-                <Input
+                <DatePicker
                   label="Tanggal"
-                  type="date"
                   value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
+                  onChange={setSelectedDate}
                 />
               </div>
               <div className="sm:col-span-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Bulan</label>
-                <select
+                <SelectMenu
+                  label="Bulan"
                   value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                  className={filterSelectClass}
-                >
-                  <option value="">Semua bulan</option>
-                  {MONTH_OPTIONS.map((month) => (
-                    <option key={month.value} value={month.value}>{month.label}</option>
-                  ))}
-                </select>
+                  onChange={setSelectedMonth}
+                  options={MONTH_OPTIONS.map((month) => ({ value: month.value, label: month.label }))}
+                  placeholder="Semua bulan"
+                />
               </div>
               <div className="sm:col-span-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
-                <select
+                <SelectMenu
+                  label="Tahun"
                   value={selectedYear}
-                  onChange={(e) => setSelectedYear(e.target.value)}
-                  className={filterSelectClass}
-                >
-                  <option value="">Semua tahun</option>
-                  {availableYears.map((year) => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
-                </select>
+                  onChange={setSelectedYear}
+                  options={availableYears.map((year) => ({ value: year, label: year }))}
+                  placeholder="Semua tahun"
+                />
               </div>
               <div className="sm:col-span-6">
                 <Input
@@ -274,6 +266,7 @@ export const EmployeeLapkinList = () => {
                   max={100}
                   value={scoreMin}
                   onChange={(e) => setScoreMin(e.target.value)}
+                  clearable
                 />
               </div>
               <div className="sm:col-span-6">
@@ -284,6 +277,7 @@ export const EmployeeLapkinList = () => {
                   max={100}
                   value={scoreMax}
                   onChange={(e) => setScoreMax(e.target.value)}
+                  clearable
                 />
               </div>
             </div>
@@ -353,16 +347,20 @@ export const EmployeeLapkinList = () => {
 
       <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Buat LAPKIN Baru" size="sm">
         <div className="space-y-4">
-          <Input
+          <DatePicker
             label="Tanggal"
-            type="date"
             value={reportDate}
-            onChange={(e) => setReportDate(e.target.value)}
-            max={new Date().toISOString().split('T')[0]}
+            onChange={setReportDate}
           />
           <div className="flex justify-end gap-3">
             <Button variant="secondary" onClick={() => setShowCreateModal(false)}>Batal</Button>
-            <Button onClick={handleCreate} isLoading={isCreating} disabled={!reportDate}>Buat</Button>
+            <Button
+              onClick={handleCreate}
+              isLoading={isCreating}
+              disabled={!reportDate || reportDate > new Date().toISOString().split('T')[0]}
+            >
+              Buat
+            </Button>
           </div>
         </div>
       </Modal>

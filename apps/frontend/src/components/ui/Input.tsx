@@ -1,13 +1,15 @@
-import { InputHTMLAttributes, forwardRef, useId } from 'react';
+import { InputHTMLAttributes, forwardRef, useId, type ChangeEvent } from 'react';
 import { clsx } from 'clsx';
+import { X } from 'lucide-react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
+  clearable?: boolean;
 }
 
 const baseClass =
-  'w-full min-w-0 rounded-xl border bg-white px-3.5 py-2.5 text-sm text-gray-900 shadow-sm transition-all duration-200 placeholder:text-gray-400';
+  'w-full h-10 min-w-0 rounded-xl border bg-white px-3.5 text-sm text-gray-900 shadow-sm transition-all duration-200 placeholder:text-gray-400';
 
 const defaultState =
   'border-gray-200 hover:border-gray-300 hover:shadow';
@@ -22,10 +24,17 @@ const errorState =
   'border-red-400 bg-red-50/40 hover:border-red-400 focus:border-red-500 focus:ring-red-500/20';
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, className, id, type, ...props }, ref) => {
+  ({ label, error, clearable = false, className, id, type, ...props }, ref) => {
     const autoId = useId();
     const inputId = id ?? autoId;
     const isNumber = type === 'number';
+    const canClear =
+      clearable
+      && typeof props.value === 'string'
+      && props.value.trim() !== ''
+      && props.disabled !== true
+      && props.readOnly !== true
+      && typeof props.onChange === 'function';
 
     return (
       <div className="flex flex-col gap-1.5">
@@ -34,21 +43,40 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {label}
           </label>
         )}
-        <input
-          ref={ref}
-          id={inputId}
-          type={type}
-          className={clsx(
-            baseClass,
-            defaultState,
-            focusState,
-            disabledState,
-            error && errorState,
-            isNumber && 'input-number-no-spin tabular-nums',
-            className,
+        <div className="relative">
+          <input
+            ref={ref}
+            id={inputId}
+            type={type}
+            className={clsx(
+              baseClass,
+              defaultState,
+              focusState,
+              disabledState,
+              error && errorState,
+              isNumber && 'input-number-no-spin tabular-nums',
+              canClear && 'pr-9',
+              className,
+            )}
+            {...props}
+          />
+          {canClear && (
+            <button
+              type="button"
+              aria-label="Clear input value"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => {
+                props.onChange?.({
+                  target: { value: '' },
+                  currentTarget: { value: '' },
+                } as ChangeEvent<HTMLInputElement>);
+              }}
+            >
+              <X className="h-4 w-4" />
+            </button>
           )}
-          {...props}
-        />
+        </div>
         {error && (
           <span className="text-xs font-medium text-red-600" role="alert">
             {error}

@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useLapkinStore } from '../../stores/lapkin.store';
 import { LapkinCard } from '../../components/lapkin/LapkinCard';
 import { PageHeader } from '../../components/layout/PageHeader';
-import { Input } from '../../components/ui/Input';
+import { DatePicker } from '../../components/ui/DatePicker';
 import { SearchableSelect } from '../../components/ui/SearchableSelect';
 import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -358,6 +358,7 @@ export const ManagerLapkinList = ({ directorScope }: ManagerLapkinListProps = {}
                     value={selectedManagerId}
                     onChange={setSelectedManagerId}
                     options={managerOptions}
+                    clearable
                   />
                 </div>
               )}
@@ -380,24 +381,21 @@ export const ManagerLapkinList = ({ directorScope }: ManagerLapkinListProps = {}
                   value={selectedEmployeeId}
                   onChange={setSelectedEmployeeId}
                   options={employeeOptions}
+                  clearable
                 />
               </div>
               <div className={isDirector && directorScope === 'pegawai' ? 'sm:col-span-2' : 'sm:col-span-3'}>
-                <Input
+                <DatePicker
                   label="Tgl dari"
-                  type="date"
                   value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  className="py-2 text-sm"
+                  onChange={setDateFrom}
                 />
               </div>
               <div className={isDirector && directorScope === 'pegawai' ? 'sm:col-span-2' : 'sm:col-span-4'}>
-                <Input
+                <DatePicker
                   label="Tgl sampai"
-                  type="date"
                   value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  className="py-2 text-sm"
+                  onChange={setDateTo}
                 />
               </div>
             </div>
