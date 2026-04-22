@@ -25,6 +25,7 @@ export const LapkinTable = ({ lapkin, onManagerScoreDraftsChange }: LapkinTableP
   const [showRowModal, setShowRowModal] = useState(false);
   const [editingRow, setEditingRow] = useState<LapkinRow | null>(null);
   const [rowPendingDelete, setRowPendingDelete] = useState<LapkinRow | null>(null);
+  const [isReevaluating, setIsReevaluating] = useState(false);
 
   useEffect(() => {
     onManagerScoreDraftsChange?.(scoreDraftsByRow);
@@ -33,25 +34,35 @@ export const LapkinTable = ({ lapkin, onManagerScoreDraftsChange }: LapkinTableP
   const isEmployeeOwner =
     lapkin.employeeId === user?.id && (user?.role === 'pegawai' || user?.role === 'manager');
   const isDraft = lapkin.status === 'draft';
-  const isLocked = lapkin.status === 'locked';
+  const isEvaluated = lapkin.status === 'evaluated';
+  const isLockedOrEvaluated = lapkin.status === 'locked' || lapkin.status === 'evaluated';
 
   const canEdit = isEmployeeOwner && isDraft;
   const canEvaluateAsManager =
-    user?.role === 'manager' && isLocked && lapkin.managerId === user.id;
+    user?.role === 'manager' && isLockedOrEvaluated && lapkin.managerId === user.id;
   const canEvaluateAsDirektur =
     user?.role === 'direktur' &&
-    isLocked &&
+    isLockedOrEvaluated &&
     lapkin.employeeRole === 'manager' &&
     lapkin.managerId === user.id;
   const canEvaluate = canEvaluateAsManager || canEvaluateAsDirektur;
+  const canEditEvaluationValues =
+    canEvaluate && (lapkin.status === 'locked' || (isEvaluated && isReevaluating));
+  const draftsReadyForSave = lapkinAllEvaluableRowsDraftsComplete(lapkin, scoreDraftsByRow);
 
   const managerScoreSignFlow =
     canEvaluate && lapkin.status === 'locked' && lapkin.isSignedByManager !== true
       ? {
         persistBeforeSign: persistAllEvaluableRows,
-        draftsReadyForSign: lapkinAllEvaluableRowsDraftsComplete(lapkin, scoreDraftsByRow),
+        draftsReadyForSign: draftsReadyForSave,
       }
       : undefined;
+
+  useEffect(() => {
+    if (!isEvaluated) {
+      setIsReevaluating(false);
+    }
+  }, [isEvaluated, lapkin.id]);
 
   const showEvaluationColumns = !isDraft;
   const dataColumnCount = showEvaluationColumns ? 9 : 4;
@@ -88,12 +99,22 @@ export const LapkinTable = ({ lapkin, onManagerScoreDraftsChange }: LapkinTableP
     setRowPendingDelete(null);
   };
 
+  const saveNewEvaluation = async () => {
+    await run(
+      async () => {
+        await persistAllEvaluableRows();
+        setIsReevaluating(false);
+      },
+      { successToast: 'Penilaian baru berhasil disimpan' },
+    );
+  };
+
   return (
     <div className="lapkin-print-table bg-white border border-gray-200 rounded-lg overflow-hidden print:rounded-lg print:shadow-none">
       <div className="overflow-x-auto print:overflow-visible">
         <table className="w-full text-xs sm:text-sm">
           <thead>
-            <tr className="bg-primary-700 text-white">
+            <tr className="bg-primary-700 text-white text-[11px] sm:text-xs">
               <th className="px-2 py-2 text-center font-semibold w-10">NO</th>
               <th className="px-2 py-2 text-center font-semibold w-28">WAKTU</th>
               <th className="px-2 py-2 text-left font-semibold">URAIAN TUGAS JABATAN / KINERJA PROSES BULANAN</th>
@@ -119,7 +140,7 @@ export const LapkinTable = ({ lapkin, onManagerScoreDraftsChange }: LapkinTableP
           <LapkinTableRows
             lapkin={lapkin}
             canEdit={canEdit}
-            canEvaluate={canEvaluate}
+            canEditEvaluationValues={canEditEvaluationValues}
             showEvaluationColumns={showEvaluationColumns}
             emptyColSpan={emptyColSpan}
             scoreDraftsByRow={scoreDraftsByRow}
@@ -136,6 +157,24 @@ export const LapkinTable = ({ lapkin, onManagerScoreDraftsChange }: LapkinTableP
           <Button size="sm" onClick={openAddRowModal}>
             + Tambah Baris
           </Button>
+        </div>
+      )}
+      {isEvaluated && canEvaluate && (
+        <div className="px-4 py-3 border-t border-gray-100 bg-gray-50 print:hidden">
+          {!isReevaluating ? (
+            <Button size="sm" onClick={() => setIsReevaluating(true)}>
+              Nilai Ulang
+            </Button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="secondary" onClick={() => setIsReevaluating(false)} disabled={isLoading}>
+                Batal
+              </Button>
+              <Button size="sm" onClick={saveNewEvaluation} isLoading={isLoading} disabled={!draftsReadyForSave}>
+                Simpan Penilaian Baru
+              </Button>
+            </div>
+          )}
         </div>
       )}
 

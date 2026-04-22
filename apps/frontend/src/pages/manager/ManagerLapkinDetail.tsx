@@ -62,7 +62,7 @@ export const ManagerLapkinDetail = () => {
     user?.role !== 'direktur' || activeLapkin.employeeRole === 'manager';
 
   return (
-    <div className="p-4 space-y-3 print:p-3 print:space-y-2">
+    <div className="p-4 space-y-3 print:p-2 print:space-y-1">
       <div className="print:hidden space-y-3">
         <WorkflowHint variant="supervisor" />
         <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -83,7 +83,7 @@ export const ManagerLapkinDetail = () => {
         </div>
       </div>
 
-      <div className="space-y-3 print:space-y-2">
+      <div className="space-y-3 print:space-y-1">
         <LapkinHeader lapkin={activeLapkin} />
 
         {user?.role === 'direktur' && activeLapkin.employeeRole === 'pegawai' && (

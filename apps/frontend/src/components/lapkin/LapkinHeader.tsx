@@ -7,7 +7,7 @@ interface LapkinHeaderProps {
 }
 
 const InfoRow = ({ label, value }: { label: string; value: string }) => (
-  <div className="grid grid-cols-[minmax(0,11rem)_1fr] gap-x-1 text-sm leading-snug sm:grid-cols-[200px_1fr]">
+  <div className="grid grid-cols-[minmax(0,11rem)_1fr] gap-x-1 text-sm print:text-xs leading-snug sm:grid-cols-[200px_1fr]">
     <span className="font-medium text-gray-600">{label}</span>
     <span className="text-gray-900">: {value}</span>
   </div>
@@ -24,7 +24,7 @@ export const LapkinHeader = ({ lapkin }: LapkinHeaderProps) => {
     || (lapkin.employeeRole === 'manager' ? 'Direktur' : '-');
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-1.5">
+    <div className="bg-white border border-gray-200 rounded-lg p-4 print:p-2 space-y-1.5 print:space-y-1">
       <InfoRow label="NAMA" value={lapkin.employeeName} />
       <InfoRow label="NIP" value={lapkin.employeeNip} />
       <InfoRow label="JABATAN" value={lapkin.employeeJobTitle} />

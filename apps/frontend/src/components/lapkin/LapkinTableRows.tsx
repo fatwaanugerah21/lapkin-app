@@ -40,7 +40,7 @@ function printPercentOrDash(draft: string): string {
 export interface LapkinTableRowsProps {
   lapkin: Lapkin;
   canEdit: boolean;
-  canEvaluate: boolean;
+  canEditEvaluationValues: boolean;
   /** When false (draft), score / evaluation columns are omitted. */
   showEvaluationColumns: boolean;
   emptyColSpan: number;
@@ -54,7 +54,7 @@ export interface LapkinTableRowsProps {
 export function LapkinTableRows({
   lapkin,
   canEdit,
-  canEvaluate,
+  canEditEvaluationValues,
   showEvaluationColumns,
   emptyColSpan,
   scoreDraftsByRow,
@@ -133,7 +133,7 @@ export function LapkinTableRows({
 
         return activities.map((activity, index) => {
           const isRest = activity.isRest === true;
-          const managerEditsScores = canEvaluate && !isRest && lapkin.isSignedByManager !== true;
+          const managerEditsScores = canEditEvaluationValues && !isRest;
           const rowDrafts = scoreDraftsByRow[row.id] ?? draftsFromRow(row);
           const activityDraft = rowDrafts[index];
 

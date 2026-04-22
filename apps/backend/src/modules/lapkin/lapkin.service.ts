@@ -154,11 +154,8 @@ export class LapkinService {
     const lapkin = await this.buildLapkinResponse(lapkinId);
     await this.assertCanEvaluateAsSupervisor(lapkin, manager);
 
-    if (lapkin.status !== 'locked') {
-      throw new BadRequestException('Can only edit scores on a LOCKED LAPKIN');
-    }
-    if (lapkin.isSignedByManager) {
-      throw new BadRequestException('Cannot edit scores after the LAPKIN has been signed by the appraiser');
+    if (lapkin.status !== 'locked' && lapkin.status !== 'evaluated') {
+      throw new BadRequestException('Can only edit scores on a LOCKED or EVALUATED LAPKIN');
     }
 
     await this.assertRowBelongsToLapkin(rowId, lapkinId);
@@ -485,6 +482,11 @@ export class LapkinService {
 
     if (lapkin.status !== 'locked' && lapkin.status !== 'evaluated') {
       throw new BadRequestException('LAPKIN must be locked or evaluated before you can sign it');
+    }
+    if (!lapkin.isSignedByManager) {
+      throw new BadRequestException(
+        'Pejabat penilai harus menandatangani LAPKIN terlebih dahulu sebelum pembuat laporan dapat menandatangani.',
+      );
     }
     if (lapkin.isSignedByEmployee) {
       throw new BadRequestException('LAPKIN is already signed by you');
