@@ -10,6 +10,8 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { Spinner } from '../../components/ui/Spinner';
 import { ChevronDown } from 'lucide-react';
 import { clsx } from 'clsx';
+import { format } from 'date-fns';
+import { id as idLocale } from 'date-fns/locale';
 import type { Lapkin } from '../../types';
 import { useAuthStore } from '../../stores/auth.store';
 import { WorkflowHint } from '../../components/layout/WorkflowHint';
@@ -20,6 +22,44 @@ type LapkinGroupByEmployee = {
   employeeNip: string;
   lapkins: Lapkin[];
 };
+
+type LapkinMonthGroup = {
+  monthKey: string;
+  monthLabel: string;
+  lapkins: Lapkin[];
+};
+
+function monthKeyFromReportDate(reportDate: string): string {
+  return reportDate.slice(0, 7);
+}
+
+function monthLabelFromKey(monthKey: string): string {
+  const [yearStr, monthStr] = monthKey.split('-');
+  const year = Number(yearStr);
+  const month = Number(monthStr);
+  if (!Number.isFinite(year) || !Number.isFinite(month)) return monthKey;
+  return format(new Date(year, month - 1, 1), 'MMMM yyyy', { locale: idLocale });
+}
+
+function groupLapkinsByMonth(list: Lapkin[]): LapkinMonthGroup[] {
+  const byMonth = new Map<string, Lapkin[]>();
+  for (const lapkin of list) {
+    const key = monthKeyFromReportDate(lapkin.reportDate);
+    const bucket = byMonth.get(key);
+    if (bucket) bucket.push(lapkin);
+    else byMonth.set(key, [lapkin]);
+  }
+
+  return [...byMonth.entries()]
+    .sort(([a], [b]) => b.localeCompare(a))
+    .map(([monthKey, monthLapkins]) => ({
+      monthKey,
+      monthLabel: monthLabelFromKey(monthKey),
+      lapkins: [...monthLapkins].sort(
+        (a, b) => new Date(b.reportDate).getTime() - new Date(a.reportDate).getTime(),
+      ),
+    }));
+}
 
 function groupLapkinsByEmployee(list: Lapkin[]): LapkinGroupByEmployee[] {
   const byId = new Map<string, Lapkin[]>();
@@ -105,6 +145,7 @@ export const ManagerLapkinList = ({ directorScope }: ManagerLapkinListProps = {}
   const [dateTo, setDateTo] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [collapsedEmployeeIds, setCollapsedEmployeeIds] = useState<Set<string>>(() => new Set());
+  const [collapsedMonthKeysByEmployee, setCollapsedMonthKeysByEmployee] = useState<Record<string, Set<string>>>({});
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
@@ -204,6 +245,7 @@ export const ManagerLapkinList = ({ directorScope }: ManagerLapkinListProps = {}
   useEffect(() => {
     clearFilters();
     setCollapsedEmployeeIds(new Set());
+    setCollapsedMonthKeysByEmployee({});
   }, [location.pathname, directorScope]);
 
   const toggleGroup = (employeeId: string) => {
@@ -212,6 +254,18 @@ export const ManagerLapkinList = ({ directorScope }: ManagerLapkinListProps = {}
       if (next.has(employeeId)) next.delete(employeeId);
       else next.add(employeeId);
       return next;
+    });
+  };
+
+  const toggleMonthForEmployee = (employeeId: string, monthKey: string) => {
+    setCollapsedMonthKeysByEmployee((prev) => {
+      const current = prev[employeeId] ?? new Set(groupLapkinsByMonth(
+        grouped.find((g) => g.employeeId === employeeId)?.lapkins ?? [],
+      ).map((m) => m.monthKey));
+      const nextSet = new Set(current);
+      if (nextSet.has(monthKey)) nextSet.delete(monthKey);
+      else nextSet.add(monthKey);
+      return { ...prev, [employeeId]: nextSet };
     });
   };
 
@@ -444,18 +498,51 @@ export const ManagerLapkinList = ({ directorScope }: ManagerLapkinListProps = {}
                   </span>
                 </button>
                 {isExpanded && (
-                  <div className="grid grid-cols-1 gap-2 px-3 pb-3 pt-0 border-t border-gray-100 bg-gray-50/50 md:grid-cols-2 xl:grid-cols-3">
-                    {group.lapkins.map((lapkin) => (
-                      <LapkinCard
-                        key={lapkin.id}
-                        lapkin={lapkin}
-                        onView={(l) =>
-                          navigate(`${basePath}/lapkin/${l.id}`, {
-                            state: directorListBackPath ? { directorListBackPath } : undefined,
-                          })
-                        }
-                      />
-                    ))}
+                  <div className="space-y-3 px-3 pb-3 pt-2 border-t border-gray-100 bg-gray-50/50">
+                    {groupLapkinsByMonth(group.lapkins).map((monthGroup) => {
+                      const collapsedMonthKeys = collapsedMonthKeysByEmployee[group.employeeId]
+                        ?? new Set(groupLapkinsByMonth(group.lapkins).map((m) => m.monthKey));
+                      const isMonthExpanded = !collapsedMonthKeys.has(monthGroup.monthKey);
+                      return (
+                        <div key={monthGroup.monthKey} className="rounded-md border border-gray-200 bg-white overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => toggleMonthForEmployee(group.employeeId, monthGroup.monthKey)}
+                            className="flex w-full items-center gap-2 px-2.5 py-2 text-left hover:bg-gray-50 transition-colors"
+                            aria-expanded={isMonthExpanded}
+                          >
+                            <ChevronDown
+                              className={clsx(
+                                'w-4 h-4 shrink-0 text-gray-500 transition-transform duration-200',
+                                !isMonthExpanded && '-rotate-90',
+                              )}
+                              aria-hidden
+                            />
+                            <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                              {monthGroup.monthLabel}
+                            </h3>
+                            <span className="ml-auto text-[11px] text-gray-500 tabular-nums">
+                              {monthGroup.lapkins.length} LAPKIN
+                            </span>
+                          </button>
+                          {isMonthExpanded && (
+                            <div className="grid grid-cols-1 gap-2 border-t border-gray-100 bg-gray-50/40 p-2 md:grid-cols-2 xl:grid-cols-3">
+                              {monthGroup.lapkins.map((lapkin) => (
+                                <LapkinCard
+                                  key={lapkin.id}
+                                  lapkin={lapkin}
+                                  onView={(l) =>
+                                    navigate(`${basePath}/lapkin/${l.id}`, {
+                                      state: directorListBackPath ? { directorListBackPath } : undefined,
+                                    })
+                                  }
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </section>
